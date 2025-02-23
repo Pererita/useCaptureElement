@@ -9,8 +9,9 @@
     "declarationDir": "dist",
     "emitDeclarationOnly": false,
     "outDir": "dist",
-    "removeComments": true
+    "removeComments": true,
+    "jsx": "react-jsx"
   },
-  "include": ["src/hooks"],
-  "exclude": ["node_modules", "src/app", "src/components", "src/lib"]
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

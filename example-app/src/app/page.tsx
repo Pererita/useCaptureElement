@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { useCaptureElement } from "@/hooks/useCaptureElement";
+import { useCaptureElement } from "use-capture-element";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

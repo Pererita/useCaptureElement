@@ -1,7 +1,17 @@
+# En la raíz (useCaptureElement/.gitignore)
+
+# Node
 node_modules/
-src/
-app/
-components/
-lib/
-public/
+npm-debug.log*
+
+# Build outputs
+dist/
+out/
 .next/
+
+# Editor/OS
+.DS_Store
+
+# Dependiendo si usas Yarn/PNPM
+yarn.lock
+pnpm-lock.yaml
