@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
-  distDir: "out",
+  basePath: "/useCaptureElement",
+  assetPrefix: "/useCaptureElement/",
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  basePath: "/useCaptureElement",
-  assetPrefix: "/useCaptureElement/",
 };
 
-module.exports = nextConfig;
+export default nextConfig;
