@@ -93,12 +93,25 @@ export default function AdvancedExample() {
 * ⚡ **Fácil de usar** → Solo necesitas una referencia (ref) y un botón para capturar el contenido.
 
 ## 🤝 Contribuciones
-¡Las contribuciones son bienvenidas! 🎉
+¡Las contribuciones son bienvenidas! 🎉  
 
-Si tienes ideas para mejorar este hook, puedes:
+Si quieres mejorar el hook, sigue estos pasos:
 
-* Abrir un Issue para reportar un problema o sugerir una mejora.
-* Crear un Pull Request con mejoras en el código o documentación.
+1. **Forkea** el repositorio y clónalo en tu máquina local.
+2. Crea una nueva rama para tu cambio:
+```sh
+git checkout -b feature/nueva-funcionalidad
+```
+3. Realiza cambios y haz un commit descriptivo:
+```sh
+git commit -m "Agregada nueva funcionalidad X"
+```
+4. Sube tu rama y abre un **Pull Request (PR)** hacia `main`.  
+📌 **Para más detalles, consulta la guía de contribución:**  
+🔗 [CONTRIBUTING.md](./CONTRIBUTING.md)  
+
+Si encuentras un error, repórtalo en los **Issues**:  
+🔗 [Abrir un nuevo Issue](https://github.com/Pererita/useCaptureElement/issues/new)
 
 ## 📜 Licencia
 Este proyecto está bajo la licencia **MIT**. Consulta el archivo [LICENSE](./LICENSE) para más detalles.
