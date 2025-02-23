@@ -1,6 +1,6 @@
 {
   "name": "use-capture-element",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hook de React y Next.js para capturar elementos HTML como imagen utilizando html2canvas.",
   "main": "dist/index.js",
   "module": "dist/index.js",
