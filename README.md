@@ -2,10 +2,10 @@
 Un hook personalizado para React y Next.js que facilita la captura de imágenes de elementos HTML utilizando `html2canvas`. Ideal para generar capturas de pantalla de componentes o secciones específicas de tu aplicación.
 
 ## 🚀 Instalación
-Ejecuta el siguiente comando para instalar la dependencia requerida:
+Para instalar el paquete en tu proyecto, ejecuta:
 
 ```sh
-npm install html2canvas
+npm install use-capture-element
 ```
 
 ## 📌 Uso Básico
@@ -15,7 +15,7 @@ Importa el hook `useCaptureElement` en tu componente y úsalo para capturar cual
 
 ```sh
 import { useRef } from "react";
-import { useCaptureElement } from "@/hooks/useCaptureElement";
+import { useCaptureElement } from "use-capture-element";
 
 export default function Example() {
   const ref = useRef<HTMLDivElement>(null);
@@ -58,7 +58,7 @@ Si deseas excluir ciertos elementos de la captura, puedes usar `excludeSelector`
 
 ```sh
 import { useRef } from "react";
-import { useCaptureElement } from "@/hooks/useCaptureElement";
+import { useCaptureElement } from "use-capture-element";
 
 export default function AdvancedExample() {
   const ref = useRef<HTMLDivElement>(null);
@@ -87,10 +87,10 @@ export default function AdvancedExample() {
 
 ## 🎨 Características
 
-✅ 📸 **Captura de elementos HTML** → Convierte cualquier elemento HTML en una imagen en formato PNG.
-✅ ✂️ **Exclusión de elementos** → Permite excluir elementos específicos de la captura mediante un selector CSS.
-✅ 🖼️ **Escalado de calidad** → Usa scale: 1.5 por defecto para mejorar la calidad de la imagen.
-✅ ⚡ **Fácil de usar** → Solo necesitas una referencia (ref) y un botón para capturar el contenido.
+* 📸 **Captura de elementos HTML** → Convierte cualquier elemento HTML en una imagen en formato PNG.
+* ✂️ **Exclusión de elementos** → Permite excluir elementos específicos de la captura mediante un selector CSS.
+* 🖼️ **Escalado de calidad** → Usa scale: 1.5 por defecto para mejorar la calidad de la imagen.
+* ⚡ **Fácil de usar** → Solo necesitas una referencia (ref) y un botón para capturar el contenido.
 
 ## 🤝 Contribuciones
 ¡Las contribuciones son bienvenidas! 🎉
