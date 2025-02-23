@@ -1,5 +1,7 @@
 node_modules/
+src/
+app/
+components/
+lib/
+public/
 .next/
-out/
-dist/
-.env
