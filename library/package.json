@@ -23,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/Pererita/useCaptureElement/issues"
   },
-  "homepage": "https://github.com/Pererita/useCaptureElement#readme",
+  "homepage": "https://use-capture-element.vercel.app/",
   "files": [
     "dist",
     "README.md"
