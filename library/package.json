@@ -7,7 +7,8 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Pererita/useCaptureElement.git"
+    "url": "https://github.com/Pererita/useCaptureElement.git",
+    "directory": "library"
   },
   "keywords": [
     "react",
