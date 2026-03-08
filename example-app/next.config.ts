@@ -1,9 +1,12 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   output: "export",
   basePath: "/useCaptureElement",
-  trailingSlash: true,
-  images: { unoptimized: true },
+  trailingSlash: true, 
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
