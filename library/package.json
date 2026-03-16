@@ -24,7 +24,7 @@
   "bugs": {
     "url": "https://github.com/Pererita/useCaptureElement/issues"
   },
-  "homepage": "https://use-capture-element.vercel.app/",
+  "homepage": "https://capture-element.pererita.org",
   "files": [
     "dist",
     "README.md"

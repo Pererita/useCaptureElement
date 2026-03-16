@@ -123,7 +123,7 @@ export default function HomeContainer() {
             <p className="text-xs sm:text-sm text-slate-600 font-medium">
               <span className="sm:hidden">✨ </span>Diseñado y desarrollado con dedicación por{" "}
               <a 
-                href="https://portafolio-pererita.vercel.app/" 
+                href="https://www.pererita.org" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-slate-900 font-bold hover:text-indigo-600 transition-colors bg-clip-text hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 whitespace-nowrap"
