@@ -24,7 +24,7 @@ import {
   Eye,
 } from "lucide-react";
 
-type ExportFormat = "png" | "jpeg" | "svg" | "pdf";
+type ExportFormat = "png" | "jpeg" | "svg" | "pdf" | "webp";
 
 export default function HomeContainer() {
   const ref = useRef<HTMLDivElement>(null);
@@ -132,7 +132,7 @@ export default function HomeContainer() {
             <CardContent className="p-4 sm:p-6 md:p-8">
               {/* Selector de formatos Premium */}
               <div className="flex justify-center gap-1.5 p-1 bg-slate-100/80 rounded-xl max-w-sm mx-auto backdrop-blur-sm border border-slate-200/40 mb-4">
-                {(["png", "jpeg", "svg", "pdf"] as const).map((fmt) => (
+                {(["png", "jpeg", "svg", "pdf", "webp"] as const).map((fmt) => (
                   <button
                     key={fmt}
                     onClick={() => {
