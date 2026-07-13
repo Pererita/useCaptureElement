@@ -9,13 +9,6 @@ export interface WatermarkOptions {
   yOffset?: number;
 }
 
-export interface CropArea {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 export interface CaptureOptions {
   format?: "png" | "jpeg" | "svg" | "pdf" | "webp";
   fileName?: string;
@@ -27,7 +20,6 @@ export interface CaptureOptions {
   download?: boolean;
   watermark?: WatermarkOptions | null;
   fullScrollCapture?: boolean;
-  crop?: CropArea | null;
 }
 
 /**
@@ -254,52 +246,6 @@ export const applyWatermark = (dataUrl: string, options: WatermarkOptions): Prom
       }
     };
     img.onerror = () => reject(new Error("Error al cargar la imagen original para marca de agua"));
-    img.src = dataUrl;
-  });
-};
-
-/**
- * Recorta una sección específica de la imagen.
- * Calcula la escala de píxeles real comparando el tamaño de la imagen con las dimensiones CSS del elemento original.
- */
-export const cropImage = (
-  dataUrl: string,
-  crop: CropArea,
-  element?: HTMLElement
-): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    if (typeof window === "undefined") {
-      return resolve(dataUrl);
-    }
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const canvas = window.document.createElement("canvas");
-
-      let scaleX = 1;
-      let scaleY = 1;
-
-      if (element) {
-        scaleX = img.width / element.offsetWidth;
-        scaleY = img.height / element.offsetHeight;
-      }
-
-      const realX = crop.x * scaleX;
-      const realY = crop.y * scaleY;
-      const realWidth = crop.width * scaleX;
-      const realHeight = crop.height * scaleY;
-
-      canvas.width = realWidth;
-      canvas.height = realHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        return resolve(dataUrl);
-      }
-
-      ctx.drawImage(img, realX, realY, realWidth, realHeight, 0, 0, realWidth, realHeight);
-      resolve(canvas.toDataURL());
-    };
-    img.onerror = () => reject(new Error("Error al cargar la imagen original para recortar"));
     img.src = dataUrl;
   });
 };

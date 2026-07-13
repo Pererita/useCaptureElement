@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, MouseEvent, useEffect } from "react";
+import { useRef, useState } from "react";
 import { useCaptureElement } from "use-capture-element";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,8 +22,6 @@ import {
   Clipboard,
   Check,
   Eye,
-  Scissors,
-  Trash2,
   Sliders,
   Type,
   Grid,
@@ -52,34 +50,11 @@ export default function HomeContainer() {
     "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center"
   >("bottom-right");
 
-  // Estados de recorte visual (Snipping Tool)
-  const [isCropMode, setIsCropMode] = useState(false);
-  const [cropArea, setCropArea] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
-  const [isDrawingCrop, setIsDrawingCrop] = useState(false);
-  const [cropStart, setCropStart] = useState<{ x: number; y: number } | null>(null);
-  const [cropEnd, setCropEnd] = useState<{ x: number; y: number } | null>(null);
-
   // Función para mostrar Toast personalizado elegante y claro
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 2500);
   };
-
-  // Efecto para escuchar la tecla escape y cancelar el recorte
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isCropMode) {
-        cancelCropMode();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isCropMode]);
 
   const getActiveOptions = () => {
     return {
@@ -100,7 +75,6 @@ export default function HomeContainer() {
             position: watermarkPosition,
           }
         : null,
-      crop: cropArea,
     };
   };
 
@@ -132,7 +106,6 @@ export default function HomeContainer() {
         quality: options.quality,
         fullScrollCapture: options.fullScrollCapture,
         watermark: options.watermark,
-        crop: options.crop,
       };
       const success = await copyToClipboard(ref, copyOptions);
       if (success) {
@@ -159,52 +132,6 @@ export default function HomeContainer() {
       default:
         return <ImageIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${className || "text-blue-500"}`} />;
     }
-  };
-
-  // Manejadores de eventos para Snipping Tool
-  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    if (!isCropMode) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    setIsDrawingCrop(true);
-    setCropStart({ x, y });
-    setCropEnd({ x, y });
-    setCropArea(null);
-  };
-
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    if (!isCropMode || !isDrawingCrop || !cropStart) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
-    setCropEnd({ x, y });
-  };
-
-  const handleMouseUp = () => {
-    if (!isCropMode || !isDrawingCrop || !cropStart || !cropEnd) return;
-    setIsDrawingCrop(false);
-
-    const x = Math.min(cropStart.x, cropEnd.x);
-    const y = Math.min(cropStart.y, cropEnd.y);
-    const width = Math.abs(cropStart.x - cropEnd.x);
-    const height = Math.abs(cropStart.y - cropEnd.y);
-
-    if (width > 15 && height > 15) {
-      setCropArea({ x, y, width, height });
-    } else {
-      setCropArea(null);
-      setCropStart(null);
-      setCropEnd(null);
-    }
-  };
-
-  const cancelCropMode = () => {
-    setIsCropMode(false);
-    setCropArea(null);
-    setCropStart(null);
-    setCropEnd(null);
   };
 
   return (
@@ -238,9 +165,9 @@ export default function HomeContainer() {
               Element
             </span>
           </h1>
-          <p className="text-sm sm:text-base md:text-lg text-slate-650 leading-relaxed font-semibold mt-2">
-            Captura elementos HTML a PNG, JPEG, SVG, PDF, WEBP, añade marcas de agua, fuerza scroll
-            completo y recorta visualmente.
+          <p className="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-semibold mt-2">
+            Captura elementos HTML a PNG, JPEG, SVG, PDF, WEBP, añade marcas de agua y fuerza scroll
+            completo de forma instantánea.
           </p>
         </div>
 
@@ -262,7 +189,7 @@ export default function HomeContainer() {
               <CardContent className="p-5 space-y-6">
                 {/* 1. Selector de Formato */}
                 <div className="space-y-2 text-left">
-                  <label className="text-xs sm:text-sm font-extrabold text-slate-700 block">
+                  <label className="text-xs sm:text-sm font-semibold text-slate-700 block">
                     Formato de Exportación:
                   </label>
                   <div className="flex flex-wrap gap-1 p-1 bg-slate-100/80 rounded-xl border border-slate-200/30">
@@ -288,10 +215,10 @@ export default function HomeContainer() {
                 {/* 2. Calidad de imagen */}
                 <div className="space-y-1.5 text-left">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs sm:text-sm font-extrabold text-slate-700 block">
+                    <label className="text-xs sm:text-sm font-semibold text-slate-700 block">
                       Calidad de Compresión:
                     </label>
-                    <span className="text-xs font-bold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded border border-indigo-100">
+                    <span className="text-xs font-semibold bg-indigo-55/80 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100/50">
                       {Math.round(quality * 100)}%
                     </span>
                   </div>
@@ -304,7 +231,7 @@ export default function HomeContainer() {
                     onChange={(e) => setQuality(parseFloat(e.target.value))}
                     className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                   />
-                  <p className="text-[10px] text-slate-400 font-semibold">
+                  <p className="text-[10px] text-slate-400 font-normal">
                     Aplica a formatos JPEG, WEBP y PDF.
                   </p>
                 </div>
@@ -314,10 +241,10 @@ export default function HomeContainer() {
                   {/* Interruptor Descarga */}
                   <label className="flex items-start justify-between cursor-pointer select-none">
                     <div className="space-y-0.5 pr-4 text-left">
-                      <span className="text-xs sm:text-sm font-extrabold text-slate-700 block">
+                      <span className="text-xs sm:text-sm font-semibold text-slate-700 block">
                         Descargar archivo localmente
                       </span>
-                      <span className="text-[10px] text-indigo-600 font-bold block leading-tight">
+                      <span className="text-[10px] text-indigo-600 block leading-tight">
                         Si lo desactivas, generará el Base64 en la consola inferior en lugar de
                         descargar el archivo.
                       </span>
@@ -336,10 +263,10 @@ export default function HomeContainer() {
                   {/* Interruptor Scroll Completo */}
                   <label className="flex items-start justify-between cursor-pointer select-none">
                     <div className="space-y-0.5 pr-4 text-left">
-                      <span className="text-xs sm:text-sm font-extrabold text-slate-700 block">
+                      <span className="text-xs sm:text-sm font-semibold text-slate-700 block">
                         Capturar Scroll Completo
                       </span>
-                      <span className="text-[10px] text-slate-400 font-semibold block leading-tight">
+                      <span className="text-[10px] text-slate-400 font-normal block leading-tight">
                         Expande las zonas con barra de scroll para capturarlas en su totalidad.
                       </span>
                     </div>
@@ -354,7 +281,7 @@ export default function HomeContainer() {
 
                 {/* 4. Marca de Agua */}
                 <div className="space-y-3 pt-4 border-t border-slate-100 text-left">
-                  <label className="text-xs sm:text-sm font-extrabold text-slate-700 block flex items-center gap-1">
+                  <label className="text-xs sm:text-sm font-semibold text-slate-700 block flex items-center gap-1">
                     <Type className="w-4 h-4 text-indigo-500" />
                     Marca de Agua Automática:
                   </label>
@@ -363,11 +290,11 @@ export default function HomeContainer() {
                     value={watermarkText}
                     onChange={(e) => setWatermarkText(e.target.value)}
                     placeholder="Ej. useCaptureElement"
-                    className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-slate-50/50 font-semibold"
+                    className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-slate-50/50 font-normal"
                   />
                   {watermarkText && (
                     <div className="space-y-2">
-                      <span className="text-[10px] text-slate-500 font-extrabold block">
+                      <span className="text-[10px] text-slate-400 font-semibold block">
                         POSICIÓN EN LA IMAGEN:
                       </span>
                       <div className="grid grid-cols-3 gap-1.5 w-full max-w-[220px] mx-auto bg-slate-100/60 p-1.5 rounded-xl border border-slate-200/40">
@@ -392,7 +319,7 @@ export default function HomeContainer() {
                               onClick={() =>
                                 setWatermarkPosition(item.pos as typeof watermarkPosition)
                               }
-                              className={`h-9 text-xs font-extrabold rounded-lg flex items-center justify-center transition-all ${
+                              className={`h-9 text-xs font-bold rounded-lg flex items-center justify-center transition-all ${
                                 isDisabled
                                   ? "opacity-20 cursor-default"
                                   : isSelected
@@ -413,32 +340,17 @@ export default function HomeContainer() {
             </Card>
           </div>
 
-          {/* Zona de Demostración e Interactivos */}
+          {/* Zona de Demostración */}
           <div className="lg:col-span-7 space-y-6">
             <Card className="w-full shadow-lg border border-slate-200/50 bg-white/70 backdrop-blur-md rounded-2xl overflow-hidden">
-              <CardHeader className="bg-white/50 border-b border-slate-100/80 p-5 flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-sm sm:text-base font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 flex items-center gap-2">
-                    <Camera className="w-5 h-5 text-indigo-500" />
-                    Elemento de Captura
-                  </CardTitle>
-                  <CardDescription className="text-xs text-slate-500 font-semibold">
-                    Este es el elemento HTML interactivo que procesará el hook.
-                  </CardDescription>
-                </div>
-
-                {/* Botón de activación del recorte visual */}
-                {!isCropMode && (
-                  <Button
-                    onClick={() => setIsCropMode(true)}
-                    size="sm"
-                    variant="outline"
-                    className="text-xs h-8 px-2.5 gap-1.5 border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50 font-bold"
-                  >
-                    <Scissors className="w-3.5 h-3.5" />
-                    <span>Recorte Visual</span>
-                  </Button>
-                )}
+              <CardHeader className="bg-white/50 border-b border-slate-100/80 p-5">
+                <CardTitle className="text-sm sm:text-base font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 flex items-center gap-2">
+                  <Camera className="w-5 h-5 text-indigo-500" />
+                  Elemento de Captura
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500 font-semibold">
+                  Este es el elemento HTML interactivo que procesará el hook.
+                </CardDescription>
               </CardHeader>
 
               <CardContent className="p-6 relative">
@@ -454,7 +366,7 @@ export default function HomeContainer() {
                       <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-slate-800">
                         Tarjeta de Datos Dinámicos
                       </h3>
-                      <p className="font-semibold text-slate-550 text-xs">
+                      <p className="font-semibold text-slate-500 text-xs">
                         Captura de pantalla limpia, modular y segura.
                       </p>
                     </div>
@@ -483,10 +395,8 @@ export default function HomeContainer() {
                       <p>• v1.1.0 - Soporte multiformato (PNG, JPEG, SVG, PDF, WEBP).</p>
                       <p>• v1.1.0 - Modo sin descarga (Base64/dataUrl).</p>
                       <p>• v1.1.0 - Copiado al portapapeles nativo de imágenes.</p>
-                      <p>• v1.1.0 - Inyección temporal de estilos CSS (styleOverrides).</p>
                       <p>• v1.1.0 - Marcas de agua por texto/imagen configurables.</p>
                       <p>• v1.1.0 - Captura de scroll completo en elementos de altura fija.</p>
-                      <p>• v1.1.0 - Herramienta de recorte visual integrado (Crop area).</p>
                       <p className="text-indigo-600 font-bold">
                         🎯 ¡Fin de la lista de características avanzadas!
                       </p>
@@ -506,98 +416,8 @@ export default function HomeContainer() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Overlay Oscuro para Snipping Tool (Modo Recorte) reposicionado como hijo directo */}
-                  {isCropMode && (
-                    <div
-                      onMouseDown={handleMouseDown}
-                      onMouseMove={handleMouseMove}
-                      onMouseUp={handleMouseUp}
-                      className="absolute inset-0 bg-slate-950/65 rounded-2xl cursor-crosshair flex flex-col items-center justify-center select-none z-55 ignore-capture"
-                    >
-                      {!cropStart && (
-                        <div className="bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-slate-200/60 text-slate-800 text-center shadow-2xl pointer-events-none max-w-[260px] space-y-1.5">
-                          <p className="text-xs font-bold flex items-center gap-1.5 justify-center text-indigo-600">
-                            <Scissors className="w-4 h-4 animate-bounce" /> Mode Recorte Visual
-                            Activo
-                          </p>
-                          <p className="text-[10px] text-slate-500 font-semibold leading-normal">
-                            Mantén presionado el clic y arrastra sobre la tarjeta para dibujar el
-                            área de captura. Presiona Esc para salir.
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Rectángulo de selección claro dibujado en pantalla */}
-                      {cropStart && cropEnd && (
-                        <div
-                          className="absolute border-2 border-dashed border-sky-400 bg-sky-400/10 shadow-[0_0_0_9999px_rgba(15,23,42,0.65)] overflow-visible"
-                          style={{
-                            left: Math.min(cropStart.x, cropEnd.x),
-                            top: Math.min(cropStart.y, cropEnd.y),
-                            width: Math.abs(cropStart.x - cropEnd.x),
-                            height: Math.abs(cropStart.y - cropEnd.y),
-                          }}
-                        >
-                          <div className="absolute -top-6 left-0 bg-sky-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap">
-                            {Math.round(Math.abs(cropStart.x - cropEnd.x))} x{" "}
-                            {Math.round(Math.abs(cropStart.y - cropEnd.y))}px
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Menú de control flotante interactivo abajo del área dibujada */}
-                      {cropArea && (
-                        <div
-                          className="absolute bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl shadow-2xl border border-slate-200/80 flex items-center gap-2 z-[99] pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-200"
-                          style={{
-                            left: Math.max(
-                              10,
-                              Math.min(cropArea.x, ref.current ? ref.current.clientWidth - 180 : 0)
-                            ),
-                            top: Math.max(10, cropArea.y + cropArea.height + 15),
-                          }}
-                        >
-                          <span className="text-[10px] font-bold text-indigo-600 pr-1.5 border-r border-slate-100 whitespace-nowrap">
-                            {Math.round(cropArea.width)}x{Math.round(cropArea.height)}px
-                          </span>
-                          <button
-                            type="button"
-                            onClick={cancelCropMode}
-                            className="text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100 transition"
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setIsCropMode(false)}
-                            className="text-[10px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-lg shadow-sm transition"
-                          >
-                            Fijar Recorte
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </CardContent>
-
-              {/* Botón flotante para restablecer el recorte si ya hay uno fijado */}
-              {cropArea && !isCropMode && (
-                <div className="px-6 pb-2 text-left flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 text-[10px] bg-sky-50 text-sky-700 border border-sky-200 px-2.5 py-1 rounded-lg font-bold">
-                    <Scissors className="w-3 h-3 text-sky-500" />
-                    Recorte activo: {Math.round(cropArea.width)}x{Math.round(cropArea.height)}px
-                  </span>
-                  <button
-                    onClick={cancelCropMode}
-                    className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-slate-100"
-                    title="Restablecer recorte"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
 
               {/* Consola Base64 para download=false */}
               {capturedUrl && (
@@ -622,7 +442,7 @@ export default function HomeContainer() {
                       value={capturedUrl}
                       className="w-full h-24 bg-white/90 text-indigo-950 font-mono text-xs p-3 rounded-xl border border-indigo-200/50 shadow-inner focus:outline-none resize-none scrollbar-thin"
                     />
-                    <p className="text-[10px] text-indigo-650 font-bold">
+                    <p className="text-[10px] text-indigo-600 font-bold">
                       ✓ download desactivado. String Base64 listo para subirse a S3, base de datos o
                       API.
                     </p>

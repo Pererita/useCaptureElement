@@ -6,7 +6,6 @@ import {
   exportToPdf,
   applyFullScrollCapture,
   applyWatermark,
-  cropImage,
   convertToWebp,
 } from "./utils";
 
@@ -41,7 +40,6 @@ export const useCaptureElement = () => {
         download = true,
         watermark = null,
         fullScrollCapture = false,
-        crop = null,
       } = options;
 
       const element = ref.current;
@@ -95,12 +93,7 @@ export const useCaptureElement = () => {
 
         // --- Procesamiento Gráfico Posterior (Canvas) ---
 
-        // 1. Aplicar Recorte si se especifica
-        if (crop) {
-          dataUrl = await cropImage(dataUrl, crop, element);
-        }
-
-        // 2. Aplicar Marca de agua si se especifica
+        // 1. Aplicar Marca de agua si se especifica
         if (watermark) {
           dataUrl = await applyWatermark(dataUrl, watermark);
         }
@@ -152,7 +145,6 @@ export const useCaptureElement = () => {
         height,
         watermark = null,
         fullScrollCapture = false,
-        crop = null,
       } = options;
 
       const element = ref.current;
@@ -176,7 +168,6 @@ export const useCaptureElement = () => {
           height,
           watermark,
           fullScrollCapture,
-          crop,
         });
 
         if (!dataUrl) {

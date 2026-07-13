@@ -1,6 +1,6 @@
 # useCaptureElement
 
-Un hook de React y Next.js moderno, ligero y altamente seguro para capturar elementos del DOM y exportarlos a múltiples formatos como **PNG**, **JPEG**, **SVG** y **PDF**.
+Un hook de React y Next.js moderno, ligero y altamente seguro para capturar elementos del DOM y exportarlos a múltiples formatos como **PNG**, **JPEG**, **SVG**, **PDF** y **WEBP**.
 
 Es compatible con SSR (Server-Side Rendering) y está optimizado para evitar sobreingeniería y penalizaciones en el tamaño de los bundles del cliente importando dinámicamente sus librerías motor.
 
@@ -8,8 +8,10 @@ Es compatible con SSR (Server-Side Rendering) y está optimizado para evitar sob
 
 ## 🎨 Características
 
-- 🚀 **Soporte Multiformato**: Exporta elementos a imágenes rasterizadas (**PNG**, **JPEG**), vectores vectoriales (**SVG**) y documentos (**PDF**).
+- 🚀 **Soporte Multiformato**: Exporta elementos a imágenes rasterizadas (**PNG**, **JPEG**, **WEBP**), vectores (**SVG**) y documentos (**PDF**).
 - 📋 **Copiar al Portapapeles**: Permite copiar la captura directamente en el portapapeles para pegarla en otras aplicaciones sin descargar archivos.
+- 💧 **Marcas de Agua**: Agrega marcas de agua personalizadas de texto o imagen en cualquiera de las esquinas o el centro de la captura con opacidades configurables.
+- 📜 **Captura de Scroll Completo**: Expande de forma temporal y recursiva el contenedor y todos sus hijos descendientes con scroll activo para capturar el contenido oculto.
 - ☁️ **Captura sin Descarga (Modo Servidor)**: Permite desactivar la descarga automática y obtener el string Base64 (`dataUrl`) para subir la imagen a tu base de datos o servidor de almacenamiento.
 - ⚡ **Ultra Ligero y Rápido**: Utiliza `html-to-image` en lugar de `html2canvas`, logrando capturas mucho más rápidas a través de renderizado nativo del navegador SVG (`<foreignObject>`) y reduciendo el bundle de ~140kB a ~30kB.
 - 📦 **SSR Ready (Next.js Compatible)**: Las dependencias del cliente (`jspdf`, `html-to-image`) se importan de manera dinámica sólo cuando se invoca la captura, previniendo errores durante la compilación en el servidor.
@@ -32,7 +34,7 @@ yarn add use-capture-element
 
 ## 📌 Uso Básico
 
-Importa el hook `useCaptureElement` en tu componente. Puedes usar la nueva función modular `capture` o la función clásica compatible `generateImage`.
+Importa el hook `useCaptureElement` en tu componente. Puedes usar la función modular `capture` o la función clásica compatible `generateImage`.
 
 ### 📝 Ejemplo: Exportación en Múltiples Formatos
 
@@ -45,7 +47,7 @@ import { useCaptureElement } from "use-capture-element";
 export default function CaptureCard() {
   const elementRef = useRef<HTMLDivElement>(null);
   const { capture } = useCaptureElement();
-  const [format, setFormat] = useState<"png" | "pdf" | "svg">("png");
+  const [format, setFormat] = useState<"png" | "pdf" | "webp">("png");
 
   const handleCapture = async () => {
     await capture(elementRef, {
@@ -53,6 +55,14 @@ export default function CaptureCard() {
       fileName: `mi-componente.${format}`,
       excludeSelector: ".no-exportar", // oculta elementos con esta clase
       backgroundColor: "#ffffff",
+      fullScrollCapture: true, // Captura todo el contenido oculto por scroll
+      watermark: {
+        text: "useCaptureElement",
+        color: "#4f46e5",
+        opacity: 0.35,
+        fontSize: 24,
+        position: "bottom-right",
+      },
     });
   };
 
@@ -76,6 +86,7 @@ export default function CaptureCard() {
         >
           <option value="png">PNG</option>
           <option value="jpeg">JPEG</option>
+          <option value="webp">WEBP</option>
           <option value="svg">SVG (Vectores)</option>
           <option value="pdf">PDF (Documento)</option>
         </select>
@@ -102,26 +113,44 @@ El hook expone las siguientes funciones modernas:
 
 Captura el elemento y lo exporta en el formato especificado. Retorna una promesa con el string Base64 (`dataUrl`) del recurso generado (`Promise<string | null>`).
 
-| Propiedad del Objeto `options` | Tipo                                | Por defecto          | Descripción                                                                                                                                                |
-| :----------------------------- | :---------------------------------- | :------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `format`                       | `'png' \| 'jpeg' \| 'svg' \| 'pdf'` | `'png'`              | El formato de exportación de la captura.                                                                                                                   |
-| `fileName`                     | `string`                            | `'capture.{format}'` | Nombre del archivo a descargar (relevante si `download` es `true`).                                                                                        |
-| `excludeSelector`              | `string \| null`                    | `null`               | Selector CSS para ocultar elementos durante la exportación.                                                                                                |
-| `quality`                      | `number`                            | `0.95`               | Nivel de calidad para compresión en formatos JPEG/PDF.                                                                                                     |
-| `backgroundColor`              | `string`                            | `undefined`          | Color de fondo de la imagen (ej: `'#ffffff'`).                                                                                                             |
-| `width` / `height`             | `number`                            | `undefined`          | Dimensiones personalizadas para el renderizado.                                                                                                            |
-| `download`                     | `boolean`                           | `true`               | Si es `true`, descarga el archivo en el navegador. Si es `false`, evita la descarga y solo retorna el `dataUrl` Base64 (ideal para subirlo a tu servidor). |
+| Propiedad del Objeto `options` | Tipo                                              | Por defecto          | Descripción                                                                                                                                                |
+| :----------------------------- | :------------------------------------------------ | :------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `format`                       | `'png' \| 'jpeg' \| 'svg' \| 'pdf' \| 'webp'`     | `'png'`              | El formato de exportación de la captura.                                                                                                                   |
+| `fileName`                     | `string`                                          | `'capture.{format}'` | Nombre del archivo a descargar (relevante si `download` es `true`).                                                                                        |
+| `excludeSelector`              | `string \| null`                                  | `null`               | Selector CSS para ocultar elementos durante la exportación.                                                                                                |
+| `quality`                      | `number`                                          | `0.95`               | Nivel de calidad para compresión en formatos JPEG/WEBP/PDF.                                                                                                |
+| `backgroundColor`              | `string`                                          | `undefined`          | Color de fondo de la imagen (ej: `'#ffffff'`).                                                                                                             |
+| `width` / `height`             | `number`                                          | `undefined`          | Dimensiones personalizadas para el renderizado.                                                                                                            |
+| `download`                     | `boolean`                                         | `true`               | Si es `true`, descarga el archivo en el navegador. Si es `false`, evita la descarga y solo retorna el `dataUrl` Base64 (ideal para subirlo a tu servidor). |
+| `fullScrollCapture`            | `boolean`                                         | `false`              | Expande de forma recursiva el elemento y todos sus descendientes con scroll vertical activo para capturarlos completos.                                    |
+| `watermark`                    | [`WatermarkOptions`](#watermarkoptions) \| `null` | `null`               | Añade una marca de agua (texto o imagen) configurable sobre la captura.                                                                                    |
+
+#### `WatermarkOptions`
+
+| Propiedad             | Tipo                                                                       | Por defecto               | Descripción                                                                            |
+| :-------------------- | :------------------------------------------------------------------------- | :------------------------ | :------------------------------------------------------------------------------------- |
+| `text`                | `string`                                                                   | `undefined`               | Texto de la marca de agua.                                                             |
+| `imageUrl`            | `string`                                                                   | `undefined`               | Ruta de una imagen a usar como marca de agua (reemplaza al texto si se especifica).    |
+| `position`            | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'center'` | `'bottom-right'`          | Posición relativa de la marca de agua sobre la captura.                                |
+| `fontSize`            | `number`                                                                   | `16`                      | Tamaño de la fuente del texto de marca de agua (escala según pixelRatio de la imagen). |
+| `color`               | `string`                                                                   | `'rgba(128,128,128,0.5)'` | Color de relleno del texto de la marca de agua.                                        |
+| `opacity`             | `number`                                                                   | `0.5`                     | Opacidad del renderizado de la marca de agua (entre `0.0` y `1.0`).                    |
+| `xOffset` / `yOffset` | `number`                                                                   | `20`                      | Separación en pixeles desde el borde seleccionado (escala según pixelRatio).           |
+
+---
 
 ### 2. `copyToClipboard(ref, options)`
 
 Captura el elemento como una imagen PNG y la copia directamente al portapapeles del sistema operativo (`Promise<boolean>`).
 
-| Propiedad del Objeto `options` | Tipo             | Por defecto | Descripción                                                 |
-| :----------------------------- | :--------------- | :---------- | :---------------------------------------------------------- |
-| `excludeSelector`              | `string \| null` | `null`      | Selector CSS para ocultar elementos durante la exportación. |
-| `quality`                      | `number`         | `0.95`      | Nivel de calidad para la compresión.                        |
-| `backgroundColor`              | `string`         | `undefined` | Color de fondo.                                             |
-| `width` / `height`             | `number`         | `undefined` | Dimensiones personalizadas.                                 |
+| Propiedad del Objeto `options` | Tipo                                              | Por defecto | Descripción                                                                                              |
+| :----------------------------- | :------------------------------------------------ | :---------- | :------------------------------------------------------------------------------------------------------- |
+| `excludeSelector`              | `string \| null`                                  | `null`      | Selector CSS para ocultar elementos durante la exportación.                                              |
+| `quality`                      | `number`                                          | `0.95`      | Nivel de calidad para la compresión.                                                                     |
+| `backgroundColor`              | `string`                                          | `undefined` | Color de fondo.                                                                                          |
+| `width` / `height`             | `number`                                          | `undefined` | Dimensiones personalizadas.                                                                              |
+| `fullScrollCapture`            | `boolean`                                         | `false`     | Expande recursivamente el elemento y todos sus descendientes con scroll activo para copiarlos completos. |
+| `watermark`                    | [`WatermarkOptions`](#watermarkoptions) \| `null` | `null`      | Añade una marca de agua configurable sobre la captura.                                                   |
 
 ---
 
