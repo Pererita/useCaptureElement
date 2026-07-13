@@ -1,117 +1,188 @@
 # useCaptureElement
-Un hook personalizado para React y Next.js que facilita la captura de imágenes de elementos HTML utilizando `html2canvas`. Ideal para generar capturas de pantalla de componentes o secciones específicas de tu aplicación.
 
-## 🚀 Instalación
-Para instalar el paquete en tu proyecto, ejecuta:
+Un hook de React y Next.js moderno, ligero y altamente seguro para capturar elementos del DOM y exportarlos a múltiples formatos como **PNG**, **JPEG**, **SVG** y **PDF**.
 
-```sh
-npm install use-capture-element
-```
+Es compatible con SSR (Server-Side Rendering) y está optimizado para evitar sobreingeniería y penalizaciones en el tamaño de los bundles del cliente importando dinámicamente sus librerías motor.
 
-## 📌 Uso Básico
-Importa el hook `useCaptureElement` en tu componente y úsalo para capturar cualquier elemento HTML.
-
-### 📝 Ejemplo: Capturar un elemento HTML
-
-```sh
-import { useRef } from "react";
-import { useCaptureElement } from "use-capture-element";
-
-export default function Example() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { generateImage } = useCaptureElement();
-
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <div
-        ref={ref}
-        className="p-4 border rounded-lg shadow-md bg-gray-100 text-center"
-      >
-        Este elemento será capturado como una imagen.
-      </div>
-      <button
-        onClick={() => generateImage(ref, "captura.png")}
-        className="px-4 py-2 bg-blue-500 text-white rounded-md"
-      >
-        Capturar Elemento
-      </button>
-    </div>
-  );
-}
-```
-
-## ⚙️ API del Hook
-El hook `useCaptureElement` expone la siguiente función:
-
-### 📌 `generateImage(ref, fileName, excludeSelector?)`
-
-| Parámetro         | Tipo                         | Descripción |
-|------------------|----------------------------|-------------|
-| `ref`           | `RefObject<HTMLElement>`     | Referencia al elemento HTML que se va a capturar. |
-| `fileName`      | `string` _(opcional)_       | Nombre del archivo de la imagen generada. *(Por defecto: `"image.png"`)* |
-| `excludeSelector` | `string` _(opcional)_       | Selector CSS para excluir elementos específicos de la captura. |
-
-📌 **Nota:** Si `excludeSelector` se proporciona, todos los elementos que coincidan con el selector serán excluidos de la captura.
-
-## 🛠 Ejemplo Avanzado: Excluir elementos específicos
-Si deseas excluir ciertos elementos de la captura, puedes usar `excludeSelector`:
-
-```sh
-import { useRef } from "react";
-import { useCaptureElement } from "use-capture-element";
-
-export default function AdvancedExample() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { generateImage } = useCaptureElement();
-
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <div
-        ref={ref}
-        className="p-4 border rounded-lg shadow-md bg-gray-100 text-center"
-      >
-        <p>Este elemento será capturado con alta calidad.</p>
-        <div className="hidden-element text-red-500">Este no aparecerá en la captura.</div>
-      </div>
-      <button
-        onClick={() => generateImage(ref, "high-quality-capture.png", ".hidden-element")}
-        className="px-4 py-2 bg-green-500 text-white rounded-md"
-      >
-        Capturar sin elementos ocultos
-      </button>
-    </div>
-  );
-}
-```
-📢 **Nota**: Todos los elementos con la clase .hidden-element serán excluidos de la captura.
+---
 
 ## 🎨 Características
 
-* 📸 **Captura de elementos HTML** → Convierte cualquier elemento HTML en una imagen en formato PNG.
-* ✂️ **Exclusión de elementos** → Permite excluir elementos específicos de la captura mediante un selector CSS.
-* 🖼️ **Escalado de calidad** → Usa scale: 1.5 por defecto para mejorar la calidad de la imagen.
-* ⚡ **Fácil de usar** → Solo necesitas una referencia (ref) y un botón para capturar el contenido.
+- 🚀 **Soporte Multiformato**: Exporta elementos a imágenes rasterizadas (**PNG**, **JPEG**), vectores vectoriales (**SVG**) y documentos (**PDF**).
+- 📋 **Copiar al Portapapeles**: Permite copiar la captura directamente en el portapapeles para pegarla en otras aplicaciones sin descargar archivos.
+- ☁️ **Captura sin Descarga (Modo Servidor)**: Permite desactivar la descarga automática y obtener el string Base64 (`dataUrl`) para subir la imagen a tu base de datos o servidor de almacenamiento.
+- ⚡ **Ultra Ligero y Rápido**: Utiliza `html-to-image` en lugar de `html2canvas`, logrando capturas mucho más rápidas a través de renderizado nativo del navegador SVG (`<foreignObject>`) y reduciendo el bundle de ~140kB a ~30kB.
+- 📦 **SSR Ready (Next.js Compatible)**: Las dependencias del cliente (`jspdf`, `html-to-image`) se importan de manera dinámica sólo cuando se invoca la captura, previniendo errores durante la compilación en el servidor.
+- ✂️ **Exclusión de Elementos**: Permite ocultar selectivamente componentes del DOM (ej. botones de descarga) usando selectores CSS.
+- 🛡️ **Seguridad Garantizada**: Cadena de dependencias auditada frecuentemente y libre de vulnerabilidades críticas.
 
-## 🤝 Contribuciones
-¡Las contribuciones son bienvenidas! 🎉  
+---
 
-Si quieres mejorar el hook, sigue estos pasos:
+## 🚀 Instalación
 
-1. **Forkea** el repositorio y clónalo en tu máquina local.
-2. Crea una nueva rama para tu cambio:
 ```sh
-git checkout -b feature/nueva-funcionalidad
+npm install use-capture-element
+# o
+pnpm add use-capture-element
+# o
+yarn add use-capture-element
 ```
-3. Realiza cambios y haz un commit descriptivo:
-```sh
-git commit -m "Agregada nueva funcionalidad X"
-```
-4. Sube tu rama y abre un **Pull Request (PR)** hacia `main`.  
-📌 **Para más detalles, consulta la guía de contribución:**  
-🔗 [CONTRIBUTING.md](./CONTRIBUTING.md)  
 
-Si encuentras un error, repórtalo en los **Issues**:  
-🔗 [Abrir un nuevo Issue](https://github.com/Pererita/useCaptureElement/issues/new)
+---
+
+## 📌 Uso Básico
+
+Importa el hook `useCaptureElement` en tu componente. Puedes usar la nueva función modular `capture` o la función clásica compatible `generateImage`.
+
+### 📝 Ejemplo: Exportación en Múltiples Formatos
+
+```tsx
+"use client";
+
+import { useRef, useState } from "react";
+import { useCaptureElement } from "use-capture-element";
+
+export default function CaptureCard() {
+  const elementRef = useRef<HTMLDivElement>(null);
+  const { capture } = useCaptureElement();
+  const [format, setFormat] = useState<"png" | "pdf" | "svg">("png");
+
+  const handleCapture = async () => {
+    await capture(elementRef, {
+      format,
+      fileName: `mi-componente.${format}`,
+      excludeSelector: ".no-exportar", // oculta elementos con esta clase
+      backgroundColor: "#ffffff",
+    });
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-4 p-6">
+      <div ref={elementRef} className="p-8 bg-slate-100 border rounded-xl">
+        <h2 className="text-xl font-bold">Tarjeta de Presentación</h2>
+        <p>Este componente se convertirá en imagen o PDF.</p>
+
+        {/* Elemento que será excluido del resultado final */}
+        <div className="no-exportar p-2 bg-yellow-100 text-yellow-800 rounded mt-4">
+          ⚠️ Este aviso de control no saldrá en la captura.
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <select
+          value={format}
+          onChange={(e) => setFormat(e.target.value as any)}
+          className="border p-2 rounded"
+        >
+          <option value="png">PNG</option>
+          <option value="jpeg">JPEG</option>
+          <option value="svg">SVG (Vectores)</option>
+          <option value="pdf">PDF (Documento)</option>
+        </select>
+
+        <button
+          onClick={handleCapture}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+        >
+          Exportar Elemento
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## ⚙️ Referencia de la API
+
+El hook expone las siguientes funciones modernas:
+
+### 1. `capture(ref, options)`
+
+Captura el elemento y lo exporta en el formato especificado. Retorna una promesa con el string Base64 (`dataUrl`) del recurso generado (`Promise<string | null>`).
+
+| Propiedad del Objeto `options` | Tipo                                | Por defecto          | Descripción                                                                                                                                                |
+| :----------------------------- | :---------------------------------- | :------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `format`                       | `'png' \| 'jpeg' \| 'svg' \| 'pdf'` | `'png'`              | El formato de exportación de la captura.                                                                                                                   |
+| `fileName`                     | `string`                            | `'capture.{format}'` | Nombre del archivo a descargar (relevante si `download` es `true`).                                                                                        |
+| `excludeSelector`              | `string \| null`                    | `null`               | Selector CSS para ocultar elementos durante la exportación.                                                                                                |
+| `quality`                      | `number`                            | `0.95`               | Nivel de calidad para compresión en formatos JPEG/PDF.                                                                                                     |
+| `backgroundColor`              | `string`                            | `undefined`          | Color de fondo de la imagen (ej: `'#ffffff'`).                                                                                                             |
+| `width` / `height`             | `number`                            | `undefined`          | Dimensiones personalizadas para el renderizado.                                                                                                            |
+| `download`                     | `boolean`                           | `true`               | Si es `true`, descarga el archivo en el navegador. Si es `false`, evita la descarga y solo retorna el `dataUrl` Base64 (ideal para subirlo a tu servidor). |
+
+### 2. `copyToClipboard(ref, options)`
+
+Captura el elemento como una imagen PNG y la copia directamente al portapapeles del sistema operativo (`Promise<boolean>`).
+
+| Propiedad del Objeto `options` | Tipo             | Por defecto | Descripción                                                 |
+| :----------------------------- | :--------------- | :---------- | :---------------------------------------------------------- |
+| `excludeSelector`              | `string \| null` | `null`      | Selector CSS para ocultar elementos durante la exportación. |
+| `quality`                      | `number`         | `0.95`      | Nivel de calidad para la compresión.                        |
+| `backgroundColor`              | `string`         | `undefined` | Color de fondo.                                             |
+| `width` / `height`             | `number`         | `undefined` | Dimensiones personalizadas.                                 |
+
+---
+
+## 🛠️ Ejemplos Avanzados
+
+### A. Subir la Captura a un Servidor (sin descargar archivo)
+
+```tsx
+const { capture } = useCaptureElement();
+
+const handleUpload = async () => {
+  // Genera el Base64 sin descargar el archivo localmente
+  const base64Image = await capture(ref, {
+    format: "png",
+    download: false,
+  });
+
+  if (base64Image) {
+    // Enviar a tu API o servidor de almacenamiento
+    await fetch("/api/upload", {
+      method: "POST",
+      body: JSON.stringify({ image: base64Image }),
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+};
+```
+
+### B. Copiar Imagen al Portapapeles (para pegar en Slack, Figma, etc.)
+
+```tsx
+const { copyToClipboard } = useCaptureElement();
+
+const handleCopy = async () => {
+  const success = await copyToClipboard(ref, {
+    excludeSelector: ".no-print",
+  });
+
+  if (success) {
+    alert("¡Imagen copiada al portapapeles!");
+  }
+};
+```
+
+---
+
+## 🔄 Compatibilidad con Versiones Anteriores (Legacy API)
+
+Para evitar romper proyectos existentes que ya utilicen la versión `1.0.x`, se mantiene disponible la firma original:
+
+### `generateImage(ref, fileName?, excludeSelector?)`
+
+Internamente mapea a la función `capture` configurada con formato PNG.
+
+```tsx
+const { generateImage } = useCaptureElement();
+await generateImage(ref, "captura.png", ".ignore-me");
+```
+
+---
 
 ## 📜 Licencia
+
 Este proyecto está bajo la licencia **MIT**. Consulta el archivo [LICENSE](./LICENSE) para más detalles.

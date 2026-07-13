@@ -1,6 +1,6 @@
 {
   "name": "use-capture-element",
-  "version": "1.0.11",
+  "version": "1.1.0",
   "description": "Hook de React y Next.js para capturar elementos HTML como imagen utilizando html2canvas.",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -31,17 +31,28 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "lint": "eslint src"
   },
   "peerDependencies": {
     "react": ">=16.8.0"
   },
   "dependencies": {
-    "html2canvas": "^1.4.1"
+    "html-to-image": "^1.11.11",
+    "jspdf": "^2.5.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@testing-library/react": "^16.1.0",
     "@types/react": "^19.2.14",
+    "eslint": "^9.16.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "happy-dom": "^15.11.7",
     "react": "^19.2.4",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^2.1.8"
   }
 }

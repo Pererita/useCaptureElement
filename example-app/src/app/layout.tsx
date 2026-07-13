@@ -26,9 +26,7 @@ export const metadata: Metadata = {
     "ShadCN",
     "imagen",
   ],
-  authors: [
-    { name: "Jesús Alfonso Perera Angel", url: "https://github.com/Pererita" },
-  ],
+  authors: [{ name: "Jesús Alfonso Perera Angel", url: "https://github.com/Pererita" }],
   openGraph: {
     title: "useCaptureElement - Captura elementos HTML como imagen",
     description:
@@ -54,11 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
 }
