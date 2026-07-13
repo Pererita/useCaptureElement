@@ -1,5 +1,23 @@
+export interface WatermarkOptions {
+  text?: string;
+  imageUrl?: string;
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center";
+  fontSize?: number;
+  color?: string;
+  opacity?: number;
+  xOffset?: number;
+  yOffset?: number;
+}
+
+export interface CropArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface CaptureOptions {
-  format?: "png" | "jpeg" | "svg" | "pdf";
+  format?: "png" | "jpeg" | "svg" | "pdf" | "webp";
   fileName?: string;
   excludeSelector?: string | null;
   quality?: number;
@@ -7,6 +25,10 @@ export interface CaptureOptions {
   width?: number;
   height?: number;
   download?: boolean;
+  styleOverrides?: Partial<CSSStyleDeclaration> | null;
+  watermark?: WatermarkOptions | null;
+  fullScrollCapture?: boolean;
+  crop?: CropArea | null;
 }
 
 /**
@@ -40,6 +62,51 @@ export const tempHideElements = (
 };
 
 /**
+ * Aplica temporalmente estilos CSS en línea sobre un elemento y retorna la función de restauración.
+ */
+export const applyStyleOverrides = (
+  element: HTMLElement,
+  styleOverrides: Partial<CSSStyleDeclaration> | null
+): (() => void) => {
+  if (!styleOverrides) return () => {};
+  const originalStyles: { [key: string]: string } = {};
+
+  Object.keys(styleOverrides).forEach((key) => {
+    const styleKey = key as any;
+    originalStyles[styleKey] = element.style[styleKey];
+    element.style[styleKey] = (styleOverrides as any)[styleKey];
+  });
+
+  return () => {
+    Object.keys(styleOverrides).forEach((key) => {
+      const styleKey = key as any;
+      element.style[styleKey] = originalStyles[styleKey];
+    });
+  };
+};
+
+/**
+ * Expande temporalmente un elemento para abarcar la totalidad de su scroll y retorna la función de restauración.
+ */
+export const applyFullScrollCapture = (element: HTMLElement, enabled: boolean): (() => void) => {
+  if (!enabled) return () => {};
+
+  const originalHeight = element.style.height;
+  const originalMaxHeight = element.style.maxHeight;
+  const originalOverflow = element.style.overflow;
+
+  element.style.height = `${element.scrollHeight}px`;
+  element.style.maxHeight = "none";
+  element.style.overflow = "visible";
+
+  return () => {
+    element.style.height = originalHeight;
+    element.style.maxHeight = originalMaxHeight;
+    element.style.overflow = originalOverflow;
+  };
+};
+
+/**
  * Realiza la descarga de un recurso en el navegador mediante un enlace temporal.
  */
 export const downloadFile = (href: string, fileName: string) => {
@@ -50,6 +117,166 @@ export const downloadFile = (href: string, fileName: string) => {
   window.document.body.appendChild(link);
   link.click();
   window.document.body.removeChild(link);
+};
+
+/**
+ * Convierte un dataUrl (Base64) de imagen a formato WebP utilizando un canvas temporal.
+ */
+export const convertToWebp = (dataUrl: string, quality: number): Promise<string> => {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      return resolve(dataUrl);
+    }
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = window.document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return resolve(dataUrl);
+      }
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/webp", quality));
+    };
+    img.onerror = () => {
+      resolve(dataUrl);
+    };
+    img.src = dataUrl;
+  });
+};
+
+/**
+ * Aplica una marca de agua (texto o imagen) sobre una captura de pantalla cargándola en un canvas temporal.
+ */
+export const applyWatermark = (dataUrl: string, options: WatermarkOptions): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") {
+      return resolve(dataUrl);
+    }
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = window.document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return resolve(dataUrl);
+      }
+      ctx.drawImage(img, 0, 0);
+
+      const {
+        text,
+        imageUrl,
+        position = "bottom-right",
+        fontSize = 16,
+        color = "rgba(128, 128, 128, 0.5)",
+        opacity = 0.5,
+        xOffset = 20,
+        yOffset = 20,
+      } = options;
+
+      ctx.save();
+      ctx.globalAlpha = opacity;
+
+      const drawWatermark = (
+        watermarkWidth: number,
+        watermarkHeight: number,
+        renderFn: (x: number, y: number) => void
+      ) => {
+        let x = xOffset;
+        let y = yOffset;
+        switch (position) {
+          case "top-right":
+            x = canvas.width - watermarkWidth - xOffset;
+            y = yOffset;
+            break;
+          case "bottom-left":
+            x = xOffset;
+            y = canvas.height - watermarkHeight - yOffset;
+            break;
+          case "bottom-right":
+            x = canvas.width - watermarkWidth - xOffset;
+            y = canvas.height - watermarkHeight - yOffset;
+            break;
+          case "center":
+            x = (canvas.width - watermarkWidth) / 2;
+            y = (canvas.height - watermarkHeight) / 2;
+            break;
+          case "top-left":
+          default:
+            x = xOffset;
+            y = yOffset;
+            break;
+        }
+        renderFn(x, y);
+      };
+
+      if (imageUrl) {
+        const watermarkImg = new window.Image();
+        watermarkImg.crossOrigin = "anonymous";
+        watermarkImg.onload = () => {
+          const w = watermarkImg.width;
+          const h = watermarkImg.height;
+          drawWatermark(w, h, (x, y) => {
+            ctx.drawImage(watermarkImg, x, y, w, h);
+            ctx.restore();
+            resolve(canvas.toDataURL());
+          });
+        };
+        watermarkImg.onerror = () => {
+          ctx.restore();
+          resolve(dataUrl);
+        };
+        watermarkImg.src = imageUrl;
+      } else if (text) {
+        ctx.font = `${fontSize}px sans-serif`;
+        ctx.fillStyle = color;
+        ctx.textBaseline = "top";
+        const textWidth = ctx.measureText(text).width;
+        const textHeight = fontSize;
+        drawWatermark(textWidth, textHeight, (x, y) => {
+          ctx.fillText(text, x, y);
+          ctx.restore();
+          resolve(canvas.toDataURL());
+        });
+      } else {
+        ctx.restore();
+        resolve(dataUrl);
+      }
+    };
+    img.onerror = () => reject(new Error("Error al cargar la imagen original para marca de agua"));
+    img.src = dataUrl;
+  });
+};
+
+/**
+ * Recorta una sección específica de la imagen utilizando un canvas temporal.
+ */
+export const cropImage = (dataUrl: string, crop: CropArea): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") {
+      return resolve(dataUrl);
+    }
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = window.document.createElement("canvas");
+      canvas.width = crop.width;
+      canvas.height = crop.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return resolve(dataUrl);
+      }
+
+      ctx.drawImage(img, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
+      resolve(canvas.toDataURL());
+    };
+    img.onerror = () => reject(new Error("Error al cargar la imagen original para recortar"));
+    img.src = dataUrl;
+  });
 };
 
 /**

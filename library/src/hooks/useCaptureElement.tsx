@@ -1,5 +1,15 @@
 import { useCallback, RefObject } from "react";
-import { CaptureOptions, tempHideElements, downloadFile, exportToPdf } from "./utils";
+import {
+  CaptureOptions,
+  tempHideElements,
+  downloadFile,
+  exportToPdf,
+  applyStyleOverrides,
+  applyFullScrollCapture,
+  applyWatermark,
+  cropImage,
+  convertToWebp,
+} from "./utils";
 
 export const useCaptureElement = () => {
   /**
@@ -30,10 +40,18 @@ export const useCaptureElement = () => {
         width,
         height,
         download = true,
+        styleOverrides = null,
+        watermark = null,
+        fullScrollCapture = false,
+        crop = null,
       } = options;
 
       const element = ref.current;
+
+      // Aplicar estados y estilos temporales del DOM
       const restoreVisibility = tempHideElements(element, excludeSelector);
+      const restoreStyles = applyStyleOverrides(element, styleOverrides);
+      const restoreScroll = applyFullScrollCapture(element, fullScrollCapture);
 
       try {
         if (format === "pdf") {
@@ -65,10 +83,26 @@ export const useCaptureElement = () => {
           case "svg":
             dataUrl = await toSvg(element, imageOptions);
             break;
+          case "webp":
+            const pngTemp = await toPng(element, imageOptions);
+            dataUrl = await convertToWebp(pngTemp, quality);
+            break;
           case "png":
           default:
             dataUrl = await toPng(element, imageOptions);
             break;
+        }
+
+        // --- Procesamiento Gráfico Posterior (Canvas) ---
+
+        // 1. Aplicar Recorte si se especifica
+        if (crop) {
+          dataUrl = await cropImage(dataUrl, crop);
+        }
+
+        // 2. Aplicar Marca de agua si se especifica
+        if (watermark) {
+          dataUrl = await applyWatermark(dataUrl, watermark);
         }
 
         if (download) {
@@ -83,6 +117,9 @@ export const useCaptureElement = () => {
         );
         throw error;
       } finally {
+        // Restaurar todos los estados del DOM en orden inverso
+        restoreScroll();
+        restoreStyles();
         restoreVisibility();
       }
     },
@@ -114,25 +151,40 @@ export const useCaptureElement = () => {
         backgroundColor = undefined,
         width,
         height,
+        styleOverrides = null,
+        watermark = null,
+        fullScrollCapture = false,
+        crop = null,
       } = options;
 
       const element = ref.current;
+
       const restoreVisibility = tempHideElements(element, excludeSelector);
+      const restoreStyles = applyStyleOverrides(element, styleOverrides);
+      const restoreScroll = applyFullScrollCapture(element, fullScrollCapture);
 
       try {
-        const { toBlob } = await import("html-to-image");
-
-        const blob = await toBlob(element, {
+        // Obtenemos la captura procesada como dataUrl Base64
+        let dataUrl = await capture(ref, {
+          format: "png",
+          download: false,
+          excludeSelector,
           quality,
           backgroundColor,
           width,
           height,
-          pixelRatio: 2,
+          styleOverrides,
+          watermark,
+          fullScrollCapture,
+          crop,
         });
 
-        if (!blob) {
-          throw new Error("No se pudo generar el Blob de la captura.");
+        if (!dataUrl) {
+          throw new Error("No se pudo generar el dataUrl para copiar.");
         }
+
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
 
         await navigator.clipboard.write([
           new ClipboardItem({
@@ -145,10 +197,12 @@ export const useCaptureElement = () => {
         console.error("useCaptureElement: Error al copiar la captura al portapapeles:", error);
         return false;
       } finally {
+        restoreScroll();
+        restoreStyles();
         restoreVisibility();
       }
     },
-    []
+    [capture]
   );
 
   /**

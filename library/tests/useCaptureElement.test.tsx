@@ -181,8 +181,6 @@ describe("useCaptureElement", () => {
     const ref = { current: div };
 
     const htmlToImage = await import("html-to-image");
-    // @ts-ignore
-    htmlToImage.toBlob = vi.fn().mockResolvedValue(new Blob(["mockBlob"], { type: "image/png" }));
 
     const mockWrite = vi.fn().mockResolvedValue(undefined);
     const origClipboard = global.navigator.clipboard;
@@ -196,11 +194,18 @@ describe("useCaptureElement", () => {
     // @ts-ignore
     global.ClipboardItem = vi.fn().mockImplementation((obj) => obj);
 
+    // Mock de fetch para simular retorno de blob del dataUrl
+    const mockBlob = new Blob(["mockBlob"], { type: "image/png" });
+    const origFetch = global.fetch;
+    global.fetch = vi.fn().mockResolvedValue({
+      blob: () => Promise.resolve(mockBlob),
+    } as any);
+
     const success = await result.current.copyToClipboard(ref);
 
     expect(success).toBe(true);
     expect(mockWrite).toHaveBeenCalled();
-    expect(htmlToImage.toBlob).toHaveBeenCalled();
+    expect(htmlToImage.toPng).toHaveBeenCalled();
 
     Object.defineProperty(global.navigator, "clipboard", {
       value: origClipboard,
@@ -208,6 +213,7 @@ describe("useCaptureElement", () => {
       configurable: true,
     });
 
+    global.fetch = origFetch;
     // @ts-ignore
     delete global.ClipboardItem;
   });
