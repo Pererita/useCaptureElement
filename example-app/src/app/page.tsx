@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useCaptureElement } from "use-capture-element";
+import { useCaptureElement } from "@pererita/use-capture-element";
 import { Button } from "@/components/ui/button";
 import {
   Card,

@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  transpilePackages: ["use-capture-element"],
+  transpilePackages: ["@pererita/use-capture-element"],
 };
 
 export default nextConfig;
