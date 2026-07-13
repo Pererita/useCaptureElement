@@ -63,6 +63,7 @@ export const tempHideElements = (
 
 /**
  * Aplica temporalmente estilos CSS en línea sobre un elemento y retorna la función de restauración.
+ * Además, inyecta la clase temporal .use-capture-active para desencadenar las anulaciones de Tailwind.
  */
 export const applyStyleOverrides = (
   element: HTMLElement,
@@ -125,15 +126,12 @@ export const applyFullScrollCapture = (element: HTMLElement, enabled: boolean): 
     }
   };
 
-  // Evaluar el elemento principal
   expandElement(element);
 
-  // Buscar todos los descendientes con scroll
   const descendants = Array.from(element.querySelectorAll("*")) as HTMLElement[];
   descendants.forEach(expandElement);
 
   return () => {
-    // Restaurar estilos en orden inverso
     scrollableElements.forEach(({ element: el, height, maxHeight, overflow }) => {
       el.style.height = height;
       el.style.maxHeight = maxHeight;
@@ -184,7 +182,8 @@ export const convertToWebp = (dataUrl: string, quality: number): Promise<string>
 };
 
 /**
- * Aplica una marca de agua (texto o imagen) sobre una captura de pantalla cargándola en un canvas temporal.
+ * Aplica una marca de agua (texto o imagen) sobre una captura de pantalla.
+ * Escala automáticamente el tamaño de fuente y coordenadas según el pixelRatio real de la imagen.
  */
 export const applyWatermark = (dataUrl: string, options: WatermarkOptions): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -217,25 +216,31 @@ export const applyWatermark = (dataUrl: string, options: WatermarkOptions): Prom
       ctx.save();
       ctx.globalAlpha = opacity;
 
+      // Compensamos el pixelRatio (asumiendo pixelRatio de 2, escalamos los tamaños relativos)
+      const scaleFactor = canvas.width > 600 ? 2 : 1;
+      const actualFontSize = fontSize * scaleFactor;
+      const actualXOffset = xOffset * scaleFactor;
+      const actualYOffset = yOffset * scaleFactor;
+
       const drawWatermark = (
         watermarkWidth: number,
         watermarkHeight: number,
         renderFn: (x: number, y: number) => void
       ) => {
-        let x = xOffset;
-        let y = yOffset;
+        let x = actualXOffset;
+        let y = actualYOffset;
         switch (position) {
           case "top-right":
-            x = canvas.width - watermarkWidth - xOffset;
-            y = yOffset;
+            x = canvas.width - watermarkWidth - actualXOffset;
+            y = actualYOffset;
             break;
           case "bottom-left":
-            x = xOffset;
-            y = canvas.height - watermarkHeight - yOffset;
+            x = actualXOffset;
+            y = canvas.height - watermarkHeight - actualYOffset;
             break;
           case "bottom-right":
-            x = canvas.width - watermarkWidth - xOffset;
-            y = canvas.height - watermarkHeight - yOffset;
+            x = canvas.width - watermarkWidth - actualXOffset;
+            y = canvas.height - watermarkHeight - actualYOffset;
             break;
           case "center":
             x = (canvas.width - watermarkWidth) / 2;
@@ -243,8 +248,8 @@ export const applyWatermark = (dataUrl: string, options: WatermarkOptions): Prom
             break;
           case "top-left":
           default:
-            x = xOffset;
-            y = yOffset;
+            x = actualXOffset;
+            y = actualYOffset;
             break;
         }
         renderFn(x, y);
@@ -254,8 +259,8 @@ export const applyWatermark = (dataUrl: string, options: WatermarkOptions): Prom
         const watermarkImg = new window.Image();
         watermarkImg.crossOrigin = "anonymous";
         watermarkImg.onload = () => {
-          const w = watermarkImg.width;
-          const h = watermarkImg.height;
+          const w = watermarkImg.width * scaleFactor;
+          const h = watermarkImg.height * scaleFactor;
           drawWatermark(w, h, (x, y) => {
             ctx.drawImage(watermarkImg, x, y, w, h);
             ctx.restore();
@@ -268,11 +273,11 @@ export const applyWatermark = (dataUrl: string, options: WatermarkOptions): Prom
         };
         watermarkImg.src = imageUrl;
       } else if (text) {
-        ctx.font = `${fontSize}px sans-serif`;
+        ctx.font = `bold ${actualFontSize}px sans-serif`;
         ctx.fillStyle = color;
         ctx.textBaseline = "top";
         const textWidth = ctx.measureText(text).width;
-        const textHeight = fontSize;
+        const textHeight = actualFontSize;
         drawWatermark(textWidth, textHeight, (x, y) => {
           ctx.fillText(text, x, y);
           ctx.restore();
@@ -289,9 +294,14 @@ export const applyWatermark = (dataUrl: string, options: WatermarkOptions): Prom
 };
 
 /**
- * Recorta una sección específica de la imagen utilizando un canvas temporal.
+ * Recorta una sección específica de la imagen.
+ * Calcula la escala de píxeles real comparando el tamaño de la imagen con las dimensiones CSS del elemento original.
  */
-export const cropImage = (dataUrl: string, crop: CropArea): Promise<string> => {
+export const cropImage = (
+  dataUrl: string,
+  crop: CropArea,
+  element?: HTMLElement
+): Promise<string> => {
   return new Promise((resolve, reject) => {
     if (typeof window === "undefined") {
       return resolve(dataUrl);
@@ -300,14 +310,29 @@ export const cropImage = (dataUrl: string, crop: CropArea): Promise<string> => {
     img.crossOrigin = "anonymous";
     img.onload = () => {
       const canvas = window.document.createElement("canvas");
-      canvas.width = crop.width;
-      canvas.height = crop.height;
+
+      let scaleX = 1;
+      let scaleY = 1;
+
+      // Si se pasa el elemento DOM, calculamos la proporción real de escalado (pixelRatio)
+      if (element) {
+        scaleX = img.width / element.offsetWidth;
+        scaleY = img.height / element.offsetHeight;
+      }
+
+      const realX = crop.x * scaleX;
+      const realY = crop.y * scaleY;
+      const realWidth = crop.width * scaleX;
+      const realHeight = crop.height * scaleY;
+
+      canvas.width = realWidth;
+      canvas.height = realHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
         return resolve(dataUrl);
       }
 
-      ctx.drawImage(img, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
+      ctx.drawImage(img, realX, realY, realWidth, realHeight, 0, 0, realWidth, realHeight);
       resolve(canvas.toDataURL());
     };
     img.onerror = () => reject(new Error("Error al cargar la imagen original para recortar"));
@@ -326,7 +351,6 @@ export const exportToPdf = async (
   backgroundColor?: string,
   download: boolean = true
 ): Promise<string | null> => {
-  // Importaciones dinámicas del lado del cliente
   const { toPng } = await import("html-to-image");
   const { jsPDF } = await import("jspdf");
 

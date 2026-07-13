@@ -65,7 +65,7 @@ export default function HomeContainer() {
   const [cropStart, setCropStart] = useState<{ x: number; y: number } | null>(null);
   const [cropEnd, setCropEnd] = useState<{ x: number; y: number } | null>(null);
 
-  // Función para mostrar Toast personalizado elegante
+  // Función para mostrar Toast personalizado elegante y claro (adapatado a los colores de la web)
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 2500);
@@ -91,7 +91,7 @@ export default function HomeContainer() {
       download,
       quality,
       fullScrollCapture: fullScroll,
-      // Aplicamos un tema oscuro nítido mediante styleOverrides
+      // Inyección imperativa del tema oscuro solo durante la captura
       styleOverrides: applyDarkTheme
         ? {
             backgroundColor: "#0f172a",
@@ -103,12 +103,12 @@ export default function HomeContainer() {
             borderWidth: "3px",
           }
         : null,
-      // Color sólido para la marca de agua y opacidad controlada de forma nativa
+      // Parámetros optimizados para marca de agua visible e independiente
       watermark: watermarkText
         ? {
             text: watermarkText,
-            color: applyDarkTheme ? "#f8fafc" : "#6366f1",
-            opacity: 0.65,
+            color: applyDarkTheme ? "#f8fafc" : "#6366f1", // Colores sólidos
+            opacity: 0.7, // Opacidad limpia
             fontSize: 24, // Letras grandes y nítidas
             position: watermarkPosition,
           }
@@ -224,14 +224,19 @@ export default function HomeContainer() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden font-sans selection:bg-indigo-100">
       {/* Elementos decorativos de fondo */}
-      <div className="absolute top-0 -left-4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
-      <div className="absolute top-0 -right-4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
-      <div className="absolute -bottom-8 left-10 sm:left-20 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+      <div className="absolute top-0 -left-4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
+      <div className="absolute top-0 -right-4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
+      <div className="absolute -bottom-8 left-10 sm:left-20 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
 
-      {/* Toast personalizado elegante */}
+      {/* Toast personalizado elegante claro (color indigo adaptado a la web) */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 bg-slate-900/95 backdrop-blur-md text-white text-xs sm:text-sm font-bold px-4 py-3 rounded-xl shadow-2xl border border-slate-800 flex items-center gap-2 z-[999] animate-in fade-in slide-in-from-bottom-5 duration-300">
-          <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+        <div className="fixed bottom-6 right-6 bg-white/95 backdrop-blur-md text-indigo-950 text-xs sm:text-sm font-bold px-5 py-4 rounded-2xl shadow-[0_15px_40px_rgba(99,102,241,0.15)] border border-indigo-100/80 flex items-center gap-2.5 z-[999] animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="p-1 bg-indigo-50 rounded-lg">
+            <Sparkles
+              className="w-4 h-4 text-indigo-600 shrink-0 animate-spin"
+              style={{ animationDuration: "3s" }}
+            />
+          </div>
           <span>{toastMessage}</span>
         </div>
       )}
@@ -250,7 +255,7 @@ export default function HomeContainer() {
               Element
             </span>
           </h1>
-          <p className="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-semibold mt-2">
+          <p className="text-sm sm:text-base md:text-lg text-slate-650 leading-relaxed font-semibold mt-2">
             Captura elementos HTML a PNG, JPEG, SVG, PDF, WEBP, inyecta estilos inline, añade marcas
             de agua, fuerza scroll completo y recorta visualmente.
           </p>
@@ -329,7 +334,7 @@ export default function HomeContainer() {
                       <span className="text-xs sm:text-sm font-extrabold text-slate-700 block">
                         Descargar archivo localmente
                       </span>
-                      <span className="text-[10px] text-indigo-600/80 font-semibold block leading-tight">
+                      <span className="text-[10px] text-indigo-650 font-semibold block leading-tight">
                         Si lo desactivas, generará el Base64 en la consola inferior en lugar de
                         descargar el archivo.
                       </span>
@@ -473,7 +478,7 @@ export default function HomeContainer() {
               </CardHeader>
 
               <CardContent className="p-6 relative">
-                {/* Elemento principal a capturar (mantenido siempre blanco en pantalla) */}
+                {/* Elemento principal a capturar (mantenido siempre blanco y estable en pantalla) */}
                 <div
                   ref={ref}
                   className="bg-white text-slate-800 p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 space-y-4 relative overflow-hidden transition-all duration-300 text-left"
@@ -485,7 +490,7 @@ export default function HomeContainer() {
                       <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-slate-800">
                         Tarjeta de Datos Dinámicos
                       </h3>
-                      <p className="font-semibold text-slate-500 text-xs">
+                      <p className="font-semibold text-slate-550 text-xs">
                         Captura de pantalla limpia, modular y segura.
                       </p>
                     </div>

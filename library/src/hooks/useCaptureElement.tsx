@@ -48,7 +48,11 @@ export const useCaptureElement = () => {
 
       const element = ref.current;
 
-      // Aplicar estados y estilos temporales del DOM
+      // 1. Cargar dinámicamente las dependencias de forma asíncrona ANTES de alterar el DOM.
+      // Esto evita que el DOM quede modificado visiblemente en pantalla mientras se descargan los archivos.
+      const htmlToImagePromise = format !== "pdf" ? import("html-to-image") : null;
+
+      // 2. Aplicar estados y estilos temporales del DOM de forma síncrona justo antes de capturar
       const restoreVisibility = tempHideElements(element, excludeSelector);
       const restoreStyles = applyStyleOverrides(element, styleOverrides);
       const restoreScroll = applyFullScrollCapture(element, fullScrollCapture);
@@ -65,7 +69,7 @@ export const useCaptureElement = () => {
           return pdfDataUrl;
         }
 
-        const { toPng, toJpeg, toSvg } = await import("html-to-image");
+        const { toPng, toJpeg, toSvg } = await htmlToImagePromise!;
         let dataUrl = "";
 
         const imageOptions = {
@@ -95,9 +99,9 @@ export const useCaptureElement = () => {
 
         // --- Procesamiento Gráfico Posterior (Canvas) ---
 
-        // 1. Aplicar Recorte si se especifica
+        // 1. Aplicar Recorte si se especifica (pasamos element para ajustar el escalado pixelRatio)
         if (crop) {
-          dataUrl = await cropImage(dataUrl, crop);
+          dataUrl = await cropImage(dataUrl, crop, element);
         }
 
         // 2. Aplicar Marca de agua si se especifica
@@ -117,7 +121,7 @@ export const useCaptureElement = () => {
         );
         throw error;
       } finally {
-        // Restaurar todos los estados del DOM en orden inverso
+        // Restaurar todos los estados del DOM en orden inverso de forma síncrona
         restoreScroll();
         restoreStyles();
         restoreVisibility();
@@ -159,11 +163,15 @@ export const useCaptureElement = () => {
 
       const element = ref.current;
 
+      const htmlToImagePromise = import("html-to-image");
+
       const restoreVisibility = tempHideElements(element, excludeSelector);
       const restoreStyles = applyStyleOverrides(element, styleOverrides);
       const restoreScroll = applyFullScrollCapture(element, fullScrollCapture);
 
       try {
+        await htmlToImagePromise; // Asegura que la librería esté cargada antes de capturar
+
         // Obtenemos la captura procesada como dataUrl Base64
         let dataUrl = await capture(ref, {
           format: "png",
