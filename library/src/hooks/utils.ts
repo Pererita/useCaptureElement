@@ -25,7 +25,6 @@ export interface CaptureOptions {
   width?: number;
   height?: number;
   download?: boolean;
-  styleOverrides?: Partial<CSSStyleDeclaration> | null;
   watermark?: WatermarkOptions | null;
   fullScrollCapture?: boolean;
   crop?: CropArea | null;
@@ -58,39 +57,6 @@ export const tempHideElements = (
     originalStyles.forEach(({ element, display }) => {
       element.style.display = display;
     });
-  };
-};
-
-/**
- * Aplica temporalmente estilos CSS en línea sobre un elemento y retorna la función de restauración.
- * Además, inyecta la clase temporal .use-capture-active para desencadenar las anulaciones de Tailwind.
- */
-export const applyStyleOverrides = (
-  element: HTMLElement,
-  styleOverrides: Partial<CSSStyleDeclaration> | null
-): (() => void) => {
-  element.classList.add("use-capture-active");
-
-  if (!styleOverrides) {
-    return () => {
-      element.classList.remove("use-capture-active");
-    };
-  }
-
-  const originalStyles: { [key: string]: string } = {};
-
-  Object.keys(styleOverrides).forEach((key) => {
-    const styleKey = key as any;
-    originalStyles[styleKey] = element.style[styleKey];
-    element.style[styleKey] = (styleOverrides as any)[styleKey];
-  });
-
-  return () => {
-    Object.keys(styleOverrides).forEach((key) => {
-      const styleKey = key as any;
-      element.style[styleKey] = originalStyles[styleKey];
-    });
-    element.classList.remove("use-capture-active");
   };
 };
 
@@ -216,7 +182,6 @@ export const applyWatermark = (dataUrl: string, options: WatermarkOptions): Prom
       ctx.save();
       ctx.globalAlpha = opacity;
 
-      // Compensamos el pixelRatio (asumiendo pixelRatio de 2, escalamos los tamaños relativos)
       const scaleFactor = canvas.width > 600 ? 2 : 1;
       const actualFontSize = fontSize * scaleFactor;
       const actualXOffset = xOffset * scaleFactor;
@@ -314,7 +279,6 @@ export const cropImage = (
       let scaleX = 1;
       let scaleY = 1;
 
-      // Si se pasa el elemento DOM, calculamos la proporción real de escalado (pixelRatio)
       if (element) {
         scaleX = img.width / element.offsetWidth;
         scaleY = img.height / element.offsetHeight;

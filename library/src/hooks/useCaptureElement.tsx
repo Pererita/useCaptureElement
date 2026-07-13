@@ -4,7 +4,6 @@ import {
   tempHideElements,
   downloadFile,
   exportToPdf,
-  applyStyleOverrides,
   applyFullScrollCapture,
   applyWatermark,
   cropImage,
@@ -40,7 +39,6 @@ export const useCaptureElement = () => {
         width,
         height,
         download = true,
-        styleOverrides = null,
         watermark = null,
         fullScrollCapture = false,
         crop = null,
@@ -49,12 +47,10 @@ export const useCaptureElement = () => {
       const element = ref.current;
 
       // 1. Cargar dinámicamente las dependencias de forma asíncrona ANTES de alterar el DOM.
-      // Esto evita que el DOM quede modificado visiblemente en pantalla mientras se descargan los archivos.
       const htmlToImagePromise = format !== "pdf" ? import("html-to-image") : null;
 
-      // 2. Aplicar estados y estilos temporales del DOM de forma síncrona justo antes de capturar
+      // 2. Aplicar estados temporales del DOM de forma síncrona justo antes de capturar
       const restoreVisibility = tempHideElements(element, excludeSelector);
-      const restoreStyles = applyStyleOverrides(element, styleOverrides);
       const restoreScroll = applyFullScrollCapture(element, fullScrollCapture);
 
       try {
@@ -99,7 +95,7 @@ export const useCaptureElement = () => {
 
         // --- Procesamiento Gráfico Posterior (Canvas) ---
 
-        // 1. Aplicar Recorte si se especifica (pasamos element para ajustar el escalado pixelRatio)
+        // 1. Aplicar Recorte si se especifica
         if (crop) {
           dataUrl = await cropImage(dataUrl, crop, element);
         }
@@ -121,9 +117,8 @@ export const useCaptureElement = () => {
         );
         throw error;
       } finally {
-        // Restaurar todos los estados del DOM en orden inverso de forma síncrona
+        // Restaurar todos los estados del DOM
         restoreScroll();
-        restoreStyles();
         restoreVisibility();
       }
     },
@@ -155,7 +150,6 @@ export const useCaptureElement = () => {
         backgroundColor = undefined,
         width,
         height,
-        styleOverrides = null,
         watermark = null,
         fullScrollCapture = false,
         crop = null,
@@ -166,11 +160,10 @@ export const useCaptureElement = () => {
       const htmlToImagePromise = import("html-to-image");
 
       const restoreVisibility = tempHideElements(element, excludeSelector);
-      const restoreStyles = applyStyleOverrides(element, styleOverrides);
       const restoreScroll = applyFullScrollCapture(element, fullScrollCapture);
 
       try {
-        await htmlToImagePromise; // Asegura que la librería esté cargada antes de capturar
+        await htmlToImagePromise;
 
         // Obtenemos la captura procesada como dataUrl Base64
         let dataUrl = await capture(ref, {
@@ -181,7 +174,6 @@ export const useCaptureElement = () => {
           backgroundColor,
           width,
           height,
-          styleOverrides,
           watermark,
           fullScrollCapture,
           crop,
@@ -206,7 +198,6 @@ export const useCaptureElement = () => {
         return false;
       } finally {
         restoreScroll();
-        restoreStyles();
         restoreVisibility();
       }
     },

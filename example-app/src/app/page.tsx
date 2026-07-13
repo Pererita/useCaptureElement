@@ -47,7 +47,6 @@ export default function HomeContainer() {
 
   // Estados de características avanzadas
   const [fullScroll, setFullScroll] = useState(false);
-  const [applyDarkTheme, setApplyDarkTheme] = useState(false);
   const [watermarkText, setWatermarkText] = useState("");
   const [watermarkPosition, setWatermarkPosition] = useState<
     "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center"
@@ -65,7 +64,7 @@ export default function HomeContainer() {
   const [cropStart, setCropStart] = useState<{ x: number; y: number } | null>(null);
   const [cropEnd, setCropEnd] = useState<{ x: number; y: number } | null>(null);
 
-  // Función para mostrar Toast personalizado elegante y claro (adapatado a los colores de la web)
+  // Función para mostrar Toast personalizado elegante y claro
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 2500);
@@ -91,25 +90,13 @@ export default function HomeContainer() {
       download,
       quality,
       fullScrollCapture: fullScroll,
-      // Inyección imperativa del tema oscuro solo durante la captura
-      styleOverrides: applyDarkTheme
-        ? {
-            backgroundColor: "#0f172a",
-            color: "#f8fafc",
-            padding: "36px",
-            borderRadius: "24px",
-            borderColor: "#6366f1",
-            borderStyle: "dashed",
-            borderWidth: "3px",
-          }
-        : null,
-      // Parámetros optimizados para marca de agua visible e independiente
+      // Marca de agua de color sólido visible (Indigo 600) y tamaño de letra legible
       watermark: watermarkText
         ? {
             text: watermarkText,
-            color: applyDarkTheme ? "#f8fafc" : "#6366f1", // Colores sólidos
-            opacity: 0.7, // Opacidad limpia
-            fontSize: 24, // Letras grandes y nítidas
+            color: "#4f46e5",
+            opacity: 0.35,
+            fontSize: 24,
             position: watermarkPosition,
           }
         : null,
@@ -144,7 +131,6 @@ export default function HomeContainer() {
         backgroundColor: options.backgroundColor,
         quality: options.quality,
         fullScrollCapture: options.fullScrollCapture,
-        styleOverrides: options.styleOverrides,
         watermark: options.watermark,
         crop: options.crop,
       };
@@ -224,18 +210,15 @@ export default function HomeContainer() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden font-sans selection:bg-indigo-100">
       {/* Elementos decorativos de fondo */}
-      <div className="absolute top-0 -left-4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
-      <div className="absolute top-0 -right-4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
-      <div className="absolute -bottom-8 left-10 sm:left-20 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
+      <div className="absolute top-0 -left-4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+      <div className="absolute top-0 -right-4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+      <div className="absolute -bottom-8 left-10 sm:left-20 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
 
-      {/* Toast personalizado elegante claro (color indigo adaptado a la web) */}
+      {/* Toast personalizado elegante claro */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 bg-white/95 backdrop-blur-md text-indigo-950 text-xs sm:text-sm font-bold px-5 py-4 rounded-2xl shadow-[0_15px_40px_rgba(99,102,241,0.15)] border border-indigo-100/80 flex items-center gap-2.5 z-[999] animate-in fade-in slide-in-from-bottom-5 duration-300">
           <div className="p-1 bg-indigo-50 rounded-lg">
-            <Sparkles
-              className="w-4 h-4 text-indigo-600 shrink-0 animate-spin"
-              style={{ animationDuration: "3s" }}
-            />
+            <Sparkles className="w-4 h-4 text-indigo-600 shrink-0" />
           </div>
           <span>{toastMessage}</span>
         </div>
@@ -256,8 +239,8 @@ export default function HomeContainer() {
             </span>
           </h1>
           <p className="text-sm sm:text-base md:text-lg text-slate-650 leading-relaxed font-semibold mt-2">
-            Captura elementos HTML a PNG, JPEG, SVG, PDF, WEBP, inyecta estilos inline, añade marcas
-            de agua, fuerza scroll completo y recorta visualmente.
+            Captura elementos HTML a PNG, JPEG, SVG, PDF, WEBP, añade marcas de agua, fuerza scroll
+            completo y recorta visualmente.
           </p>
         </div>
 
@@ -334,7 +317,7 @@ export default function HomeContainer() {
                       <span className="text-xs sm:text-sm font-extrabold text-slate-700 block">
                         Descargar archivo localmente
                       </span>
-                      <span className="text-[10px] text-indigo-650 font-semibold block leading-tight">
+                      <span className="text-[10px] text-indigo-600 font-bold block leading-tight">
                         Si lo desactivas, generará el Base64 en la consola inferior en lugar de
                         descargar el archivo.
                       </span>
@@ -364,25 +347,6 @@ export default function HomeContainer() {
                       type="checkbox"
                       checked={fullScroll}
                       onChange={(e) => setFullScroll(e.target.checked)}
-                      className="w-4 h-4 mt-0.5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 accent-indigo-600"
-                    />
-                  </label>
-
-                  {/* Interruptor Inyección de Estilos */}
-                  <label className="flex items-start justify-between cursor-pointer select-none">
-                    <div className="space-y-0.5 pr-4 text-left">
-                      <span className="text-xs sm:text-sm font-extrabold text-slate-700 block">
-                        Aplicar Tema Oscuro (Styles)
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-semibold block leading-tight">
-                        Aplica un tema oscuro sofisticado solo en el archivo final. La pantalla no
-                        sufrirá parpadeos.
-                      </span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={applyDarkTheme}
-                      onChange={(e) => setApplyDarkTheme(e.target.checked)}
                       className="w-4 h-4 mt-0.5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 accent-indigo-600"
                     />
                   </label>
@@ -478,7 +442,7 @@ export default function HomeContainer() {
               </CardHeader>
 
               <CardContent className="p-6 relative">
-                {/* Elemento principal a capturar (mantenido siempre blanco y estable en pantalla) */}
+                {/* Elemento principal a capturar */}
                 <div
                   ref={ref}
                   className="bg-white text-slate-800 p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 space-y-4 relative overflow-hidden transition-all duration-300 text-left"
@@ -542,80 +506,80 @@ export default function HomeContainer() {
                       </p>
                     </div>
                   </div>
-                </div>
 
-                {/* Overlay Oscuro para Snipping Tool (Modo Recorte) */}
-                {isCropMode && (
-                  <div
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    className="absolute inset-0 bg-slate-950/65 rounded-2xl cursor-crosshair flex flex-col items-center justify-center select-none"
-                    style={{ margin: "1.5rem" }} // Sincroniza con el padding de CardContent
-                  >
-                    {!cropStart && (
-                      <div className="bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-slate-200/60 text-slate-800 text-center shadow-2xl pointer-events-none max-w-[260px] space-y-1.5">
-                        <p className="text-xs font-bold flex items-center gap-1.5 justify-center text-indigo-600">
-                          <Scissors className="w-4 h-4 animate-bounce" /> Mode Recorte Visual Activo
-                        </p>
-                        <p className="text-[10px] text-slate-500 font-semibold leading-normal">
-                          Mantén presionado el clic y arrastra sobre la tarjeta para dibujar el área
-                          de captura. Presiona Esc para salir.
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Rectángulo de selección claro dibujado en pantalla */}
-                    {cropStart && cropEnd && (
-                      <div
-                        className="absolute border-2 border-dashed border-sky-400 bg-sky-400/10 shadow-[0_0_0_9999px_rgba(15,23,42,0.65)] overflow-visible"
-                        style={{
-                          left: Math.min(cropStart.x, cropEnd.x),
-                          top: Math.min(cropStart.y, cropEnd.y),
-                          width: Math.abs(cropStart.x - cropEnd.x),
-                          height: Math.abs(cropStart.y - cropEnd.y),
-                        }}
-                      >
-                        <div className="absolute -top-6 left-0 bg-sky-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap">
-                          {Math.round(Math.abs(cropStart.x - cropEnd.x))} x{" "}
-                          {Math.round(Math.abs(cropStart.y - cropEnd.y))}px
+                  {/* Overlay Oscuro para Snipping Tool (Modo Recorte) reposicionado como hijo directo */}
+                  {isCropMode && (
+                    <div
+                      onMouseDown={handleMouseDown}
+                      onMouseMove={handleMouseMove}
+                      onMouseUp={handleMouseUp}
+                      className="absolute inset-0 bg-slate-950/65 rounded-2xl cursor-crosshair flex flex-col items-center justify-center select-none z-55 ignore-capture"
+                    >
+                      {!cropStart && (
+                        <div className="bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-slate-200/60 text-slate-800 text-center shadow-2xl pointer-events-none max-w-[260px] space-y-1.5">
+                          <p className="text-xs font-bold flex items-center gap-1.5 justify-center text-indigo-600">
+                            <Scissors className="w-4 h-4 animate-bounce" /> Mode Recorte Visual
+                            Activo
+                          </p>
+                          <p className="text-[10px] text-slate-500 font-semibold leading-normal">
+                            Mantén presionado el clic y arrastra sobre la tarjeta para dibujar el
+                            área de captura. Presiona Esc para salir.
+                          </p>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Menú de control flotante interactivo abajo del área dibujada */}
-                    {cropArea && (
-                      <div
-                        className="absolute bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl shadow-2xl border border-slate-200/80 flex items-center gap-2 z-50 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-200"
-                        style={{
-                          left: Math.max(
-                            10,
-                            Math.min(cropArea.x, ref.current ? ref.current.clientWidth - 180 : 0)
-                          ),
-                          top: Math.max(10, cropArea.y + cropArea.height + 15),
-                        }}
-                      >
-                        <span className="text-[10px] font-bold text-indigo-600 pr-1.5 border-r border-slate-100 whitespace-nowrap">
-                          {Math.round(cropArea.width)}x{Math.round(cropArea.height)}px
-                        </span>
-                        <button
-                          type="button"
-                          onClick={cancelCropMode}
-                          className="text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100 transition"
+                      {/* Rectángulo de selección claro dibujado en pantalla */}
+                      {cropStart && cropEnd && (
+                        <div
+                          className="absolute border-2 border-dashed border-sky-400 bg-sky-400/10 shadow-[0_0_0_9999px_rgba(15,23,42,0.65)] overflow-visible"
+                          style={{
+                            left: Math.min(cropStart.x, cropEnd.x),
+                            top: Math.min(cropStart.y, cropEnd.y),
+                            width: Math.abs(cropStart.x - cropEnd.x),
+                            height: Math.abs(cropStart.y - cropEnd.y),
+                          }}
                         >
-                          Cancelar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsCropMode(false)}
-                          className="text-[10px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-lg shadow-sm transition"
+                          <div className="absolute -top-6 left-0 bg-sky-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap">
+                            {Math.round(Math.abs(cropStart.x - cropEnd.x))} x{" "}
+                            {Math.round(Math.abs(cropStart.y - cropEnd.y))}px
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Menú de control flotante interactivo abajo del área dibujada */}
+                      {cropArea && (
+                        <div
+                          className="absolute bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl shadow-2xl border border-slate-200/80 flex items-center gap-2 z-[99] pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-200"
+                          style={{
+                            left: Math.max(
+                              10,
+                              Math.min(cropArea.x, ref.current ? ref.current.clientWidth - 180 : 0)
+                            ),
+                            top: Math.max(10, cropArea.y + cropArea.height + 15),
+                          }}
                         >
-                          Fijar Recorte
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                          <span className="text-[10px] font-bold text-indigo-600 pr-1.5 border-r border-slate-100 whitespace-nowrap">
+                            {Math.round(cropArea.width)}x{Math.round(cropArea.height)}px
+                          </span>
+                          <button
+                            type="button"
+                            onClick={cancelCropMode}
+                            className="text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100 transition"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsCropMode(false)}
+                            className="text-[10px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-lg shadow-sm transition"
+                          >
+                            Fijar Recorte
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </CardContent>
 
               {/* Botón flotante para restablecer el recorte si ya hay uno fijado */}
@@ -658,7 +622,7 @@ export default function HomeContainer() {
                       value={capturedUrl}
                       className="w-full h-24 bg-white/90 text-indigo-950 font-mono text-xs p-3 rounded-xl border border-indigo-200/50 shadow-inner focus:outline-none resize-none scrollbar-thin"
                     />
-                    <p className="text-[10px] text-indigo-600/80 font-medium">
+                    <p className="text-[10px] text-indigo-650 font-bold">
                       ✓ download desactivado. String Base64 listo para subirse a S3, base de datos o
                       API.
                     </p>
