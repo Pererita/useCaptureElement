@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, MouseEvent } from "react";
+import { useRef, useState, MouseEvent, useEffect } from "react";
 import { useCaptureElement } from "use-capture-element";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,6 +64,17 @@ export default function HomeContainer() {
   const [cropStart, setCropStart] = useState<{ x: number; y: number } | null>(null);
   const [cropEnd, setCropEnd] = useState<{ x: number; y: number } | null>(null);
 
+  // Efecto para escuchar la tecla escape y cancelar el recorte
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isCropMode) {
+        cancelCropMode();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCropMode]);
+
   const getActiveOptions = () => {
     return {
       format,
@@ -77,9 +88,9 @@ export default function HomeContainer() {
         ? {
             backgroundColor: "#0f172a",
             color: "#f8fafc",
-            padding: "40px",
+            padding: "36px",
             borderRadius: "24px",
-            borderColor: "#38bdf8",
+            borderColor: "#6366f1",
             borderStyle: "dashed",
             borderWidth: "3px",
           }
@@ -87,7 +98,7 @@ export default function HomeContainer() {
       watermark: watermarkText
         ? {
             text: watermarkText,
-            color: applyDarkTheme ? "rgba(255, 255, 255, 0.4)" : "rgba(99, 102, 241, 0.4)",
+            color: applyDarkTheme ? "rgba(255, 255, 255, 0.45)" : "rgba(99, 102, 241, 0.45)",
             fontSize: 18,
             position: watermarkPosition,
           }
@@ -178,8 +189,7 @@ export default function HomeContainer() {
     const width = Math.abs(cropStart.x - cropEnd.x);
     const height = Math.abs(cropStart.y - cropEnd.y);
 
-    // Evitar recortes microscópicos accidentales
-    if (width > 10 && height > 10) {
+    if (width > 15 && height > 15) {
       setCropArea({ x, y, width, height });
     } else {
       setCropArea(null);
@@ -195,12 +205,14 @@ export default function HomeContainer() {
     setCropEnd(null);
   };
 
+  const isDarkActive = applyDarkTheme && (isCapturing || isCopying);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden font-sans selection:bg-indigo-100">
       {/* Elementos decorativos de fondo */}
-      <div className="absolute top-0 -left-4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
-      <div className="absolute top-0 -right-4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
-      <div className="absolute -bottom-8 left-10 sm:left-20 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-35"></div>
+      <div className="absolute top-0 -left-4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+      <div className="absolute top-0 -right-4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+      <div className="absolute -bottom-8 left-10 sm:left-20 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
 
       {/* Contenido principal */}
       <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative z-10 w-full max-w-5xl mx-auto">
@@ -216,31 +228,31 @@ export default function HomeContainer() {
               Element
             </span>
           </h1>
-          <p className="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-medium mt-2">
+          <p className="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-semibold mt-2">
             Captura elementos HTML a PNG, JPEG, SVG, PDF, WEBP, inyecta estilos inline, añade marcas
             de agua, fuerza scroll completo y recorta visualmente.
           </p>
         </div>
 
-        {/* Layout de dos columnas: Izquierda (Ajustes avanzados), Derecha (Demo e interactivos) */}
+        {/* Layout de dos columnas */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
           {/* Panel de Ajustes */}
           <div className="lg:col-span-5 space-y-6">
             <Card className="shadow-lg border border-slate-200/50 bg-white/80 backdrop-blur-md rounded-2xl">
               <CardHeader className="border-b border-slate-100 p-5">
-                <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
-                  <Sliders className="w-4.5 h-4.5 text-indigo-500" />
+                <CardTitle className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <Sliders className="w-5 h-5 text-indigo-500" />
                   Configuración del Hook
                 </CardTitle>
-                <CardDescription className="text-xs">
+                <CardDescription className="text-xs text-slate-500 font-semibold">
                   Modifica las opciones avanzadas del hook para ver su impacto en la captura.
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className="p-5 space-y-5">
+              <CardContent className="p-5 space-y-6">
                 {/* 1. Selector de Formato */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 block">
+                  <label className="text-xs font-extrabold text-slate-700 block">
                     Formato de Exportación:
                   </label>
                   <div className="flex flex-wrap gap-1 p-1 bg-slate-100/80 rounded-xl border border-slate-200/30">
@@ -251,7 +263,7 @@ export default function HomeContainer() {
                           setFormat(fmt);
                           setCapturedUrl(null);
                         }}
-                        className={`flex-1 min-w-[50px] py-1.5 text-xs font-bold rounded-lg capitalize transition-all duration-300 ${
+                        className={`flex-1 min-w-[55px] py-2 text-xs font-bold rounded-lg capitalize transition-all duration-300 ${
                           format === fmt
                             ? "bg-white text-indigo-600 shadow-sm border border-slate-200/40"
                             : "text-slate-500 hover:text-slate-800 hover:bg-white/40"
@@ -266,10 +278,10 @@ export default function HomeContainer() {
                 {/* 2. Calidad de imagen */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-700 block">
+                    <label className="text-xs font-extrabold text-slate-700 block">
                       Calidad de Compresión:
                     </label>
-                    <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100">
+                    <span className="text-xs font-bold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded border border-indigo-100">
                       {Math.round(quality * 100)}%
                     </span>
                   </div>
@@ -282,17 +294,21 @@ export default function HomeContainer() {
                     onChange={(e) => setQuality(parseFloat(e.target.value))}
                     className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                   />
-                  <p className="text-[9px] text-slate-400">Aplica a formatos JPEG, WEBP y PDF.</p>
+                  <p className="text-[10px] text-slate-400 font-semibold">
+                    Aplica a formatos JPEG, WEBP y PDF.
+                  </p>
                 </div>
 
                 {/* 3. Checkboxes de Ajustes */}
-                <div className="space-y-3 pt-2 border-t border-slate-100">
+                <div className="space-y-4 pt-4 border-t border-slate-100">
                   {/* Interruptor Descarga */}
-                  <label className="flex items-center justify-between cursor-pointer select-none">
-                    <div className="space-y-0.5 pr-2">
-                      <span className="text-xs font-bold text-slate-700 block">Descarga Local</span>
-                      <span className="text-[10px] text-slate-400 block">
-                        Descarga el archivo en el navegador.
+                  <label className="flex items-start justify-between cursor-pointer select-none">
+                    <div className="space-y-0.5 pr-4 text-left">
+                      <span className="text-xs font-extrabold text-slate-700 block">
+                        Descargar archivo localmente
+                      </span>
+                      <span className="text-[10px] text-indigo-600/80 font-semibold block leading-tight">
+                        Si lo desactivas, generará el Base64 en lugar de descargar el archivo.
                       </span>
                     </div>
                     <input
@@ -302,51 +318,52 @@ export default function HomeContainer() {
                         setDownload(e.target.checked);
                         setCapturedUrl(null);
                       }}
-                      className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 accent-indigo-600"
+                      className="w-4 h-4 mt-0.5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 accent-indigo-600"
                     />
                   </label>
 
                   {/* Interruptor Scroll Completo */}
-                  <label className="flex items-center justify-between cursor-pointer select-none">
-                    <div className="space-y-0.5 pr-2">
-                      <span className="text-xs font-bold text-slate-700 block">
+                  <label className="flex items-start justify-between cursor-pointer select-none">
+                    <div className="space-y-0.5 pr-4 text-left">
+                      <span className="text-xs font-extrabold text-slate-700 block">
                         Capturar Scroll Completo
                       </span>
-                      <span className="text-[10px] text-slate-400 block">
-                        Expande las zonas con barra de scroll para capturarlas completas.
+                      <span className="text-[10px] text-slate-400 font-semibold block leading-tight">
+                        Expande las zonas con barra de scroll para capturarlas en su totalidad.
                       </span>
                     </div>
                     <input
                       type="checkbox"
                       checked={fullScroll}
                       onChange={(e) => setFullScroll(e.target.checked)}
-                      className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 accent-indigo-600"
+                      className="w-4 h-4 mt-0.5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 accent-indigo-600"
                     />
                   </label>
 
                   {/* Interruptor Inyección de Estilos */}
-                  <label className="flex items-center justify-between cursor-pointer select-none">
-                    <div className="space-y-0.5 pr-2">
-                      <span className="text-xs font-bold text-slate-700 block">
+                  <label className="flex items-start justify-between cursor-pointer select-none">
+                    <div className="space-y-0.5 pr-4 text-left">
+                      <span className="text-xs font-extrabold text-slate-700 block">
                         Aplicar Tema Oscuro (Styles)
                       </span>
-                      <span className="text-[10px] text-slate-400 block">
-                        Fuerza temporalmente un estilo oscuro moderno en la captura.
+                      <span className="text-[10px] text-slate-400 font-semibold block leading-tight">
+                        Aplica un tema oscuro sofisticado solo en el resultado (la pantalla sigue
+                        blanca).
                       </span>
                     </div>
                     <input
                       type="checkbox"
                       checked={applyDarkTheme}
                       onChange={(e) => setApplyDarkTheme(e.target.checked)}
-                      className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 accent-indigo-600"
+                      className="w-4 h-4 mt-0.5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 accent-indigo-600"
                     />
                   </label>
                 </div>
 
                 {/* 4. Marca de Agua */}
-                <div className="space-y-2 pt-3 border-t border-slate-100">
-                  <label className="text-xs font-bold text-slate-700 block flex items-center gap-1">
-                    <Type className="w-3.5 h-3.5 text-indigo-500" />
+                <div className="space-y-3 pt-4 border-t border-slate-100 text-left">
+                  <label className="text-xs font-extrabold text-slate-700 block flex items-center gap-1">
+                    <Type className="w-4 h-4 text-indigo-500" />
                     Marca de Agua Automática:
                   </label>
                   <input
@@ -354,26 +371,49 @@ export default function HomeContainer() {
                     value={watermarkText}
                     onChange={(e) => setWatermarkText(e.target.value)}
                     placeholder="Ej. useCaptureElement"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-slate-50/50"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-slate-50/50 font-semibold"
                   />
                   {watermarkText && (
-                    <div className="flex gap-2 items-center">
-                      <span className="text-[10px] text-slate-500 font-bold whitespace-nowrap">
-                        Posición:
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] text-slate-500 font-extrabold block">
+                        POSICIÓN DE LA MARCA DE AGUA:
                       </span>
-                      <select
-                        value={watermarkPosition}
-                        onChange={(e) =>
-                          setWatermarkPosition(e.target.value as typeof watermarkPosition)
-                        }
-                        className="w-full text-[10px] p-1.5 bg-slate-100 rounded-lg border border-slate-200/50 font-bold focus:outline-none"
-                      >
-                        <option value="bottom-right">Abajo Derecha</option>
-                        <option value="bottom-left">Abajo Izquierda</option>
-                        <option value="top-right">Arriba Derecha</option>
-                        <option value="top-left">Arriba Izquierda</option>
-                        <option value="center">Centro</option>
-                      </select>
+                      <div className="grid grid-cols-3 gap-1.5 w-full max-w-[220px] mx-auto bg-slate-100/60 p-1.5 rounded-xl border border-slate-200/40">
+                        {[
+                          { pos: "top-left", label: "↖" },
+                          { pos: "disabled-1", label: "·" },
+                          { pos: "top-right", label: "↗" },
+                          { pos: "disabled-2", label: "·" },
+                          { pos: "center", label: "☉" },
+                          { pos: "disabled-3", label: "·" },
+                          { pos: "bottom-left", label: "↙" },
+                          { pos: "disabled-4", label: "·" },
+                          { pos: "bottom-right", label: "↘" },
+                        ].map((item, idx) => {
+                          const isDisabled = item.pos.startsWith("disabled");
+                          const isSelected = watermarkPosition === item.pos;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              disabled={isDisabled}
+                              onClick={() =>
+                                setWatermarkPosition(item.pos as typeof watermarkPosition)
+                              }
+                              className={`h-9 text-xs font-extrabold rounded-lg flex items-center justify-center transition-all ${
+                                isDisabled
+                                  ? "opacity-20 cursor-default"
+                                  : isSelected
+                                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10 scale-105"
+                                    : "bg-white hover:bg-slate-50 text-slate-500 border border-slate-200/40 hover:text-slate-800"
+                              }`}
+                              title={isDisabled ? "" : `Posición: ${item.pos}`}
+                            >
+                              {item.label}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -386,71 +426,55 @@ export default function HomeContainer() {
             <Card className="w-full shadow-lg border border-slate-200/50 bg-white/70 backdrop-blur-md rounded-2xl overflow-hidden">
               <CardHeader className="bg-white/50 border-b border-slate-100/80 p-5 flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 flex items-center gap-2">
+                  <CardTitle className="text-sm sm:text-base font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 flex items-center gap-2">
                     <Camera className="w-5 h-5 text-indigo-500" />
                     Elemento de Captura
                   </CardTitle>
-                  <CardDescription className="text-xs">
+                  <CardDescription className="text-xs text-slate-500 font-semibold">
                     Este es el elemento HTML interactivo que procesará el hook.
                   </CardDescription>
                 </div>
 
-                {/* Botones de Recorte Interactivo (Snipping Tool) */}
-                <div className="flex items-center gap-1.5">
-                  {!isCropMode ? (
-                    <Button
-                      onClick={() => setIsCropMode(true)}
-                      size="sm"
-                      variant="outline"
-                      className="text-xs h-8 px-2.5 gap-1.5 border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50"
-                    >
-                      <Scissors className="w-3.5 h-3.5" />
-                      <span>Recorte Visual</span>
-                    </Button>
-                  ) : (
-                    <div className="flex gap-1">
-                      <Button
-                        onClick={cancelCropMode}
-                        size="sm"
-                        variant="ghost"
-                        className="text-xs h-8 px-2.5 text-slate-500 hover:bg-slate-100"
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          if (!cropArea) {
-                            alert(
-                              "Dibuja un rectángulo sobre la tarjeta manteniendo el clic y arrastrando."
-                            );
-                          } else {
-                            setIsCropMode(false);
-                          }
-                        }}
-                        size="sm"
-                        className="text-xs h-8 px-2.5 bg-indigo-600 text-white hover:bg-indigo-700"
-                      >
-                        Fijar Recorte
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                {/* Botón de activación del recorte visual */}
+                {!isCropMode && (
+                  <Button
+                    onClick={() => setIsCropMode(true)}
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-8 px-2.5 gap-1.5 border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50 font-bold"
+                  >
+                    <Scissors className="w-3.5 h-3.5" />
+                    <span>Recorte Visual</span>
+                  </Button>
+                )}
               </CardHeader>
 
               <CardContent className="p-6 relative">
                 {/* Elemento principal a capturar */}
                 <div
                   ref={ref}
-                  className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 space-y-4 relative overflow-hidden transition-all duration-300"
+                  className={`p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 space-y-4 relative overflow-hidden transition-all duration-300 text-left ${
+                    isDarkActive
+                      ? "bg-slate-900 text-slate-100 ring-slate-800"
+                      : "bg-white text-slate-800"
+                  }`}
                 >
                   <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
 
                   <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1 text-left">
-                      <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 tracking-tight">
+                    <div className="space-y-1">
+                      <h3
+                        className={`text-base sm:text-lg font-extrabold tracking-tight transition-colors duration-300 ${
+                          isDarkActive ? "text-white" : "text-slate-800"
+                        }`}
+                      >
                         Tarjeta de Datos Dinámicos
                       </h3>
-                      <p className="text-slate-500 font-semibold text-xs">
+                      <p
+                        className={`font-semibold text-xs transition-colors duration-300 ${
+                          isDarkActive ? "text-sky-400" : "text-slate-500"
+                        }`}
+                      >
                         Captura de pantalla limpia, modular y segura.
                       </p>
                     </div>
@@ -460,7 +484,7 @@ export default function HomeContainer() {
                   </div>
 
                   {/* Caja de scroll para probar fullScrollCapture */}
-                  <div className="border border-slate-100 rounded-xl overflow-hidden mt-2 text-left">
+                  <div className="border border-slate-100 rounded-xl overflow-hidden mt-2">
                     <div className="bg-slate-50/80 px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
                       <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
                         <Grid className="w-3 h-3 text-slate-400" />
@@ -470,8 +494,16 @@ export default function HomeContainer() {
                         Desplázame 👇
                       </span>
                     </div>
-                    <div className="max-h-36 overflow-y-auto p-3 bg-white text-[11px] text-slate-600 space-y-1.5 scrollbar-thin">
-                      <p className="font-semibold text-slate-800">
+                    <div
+                      className={`max-h-36 overflow-y-auto p-3 text-[11px] space-y-1.5 scrollbar-thin transition-colors duration-300 ${
+                        isDarkActive ? "bg-slate-950 text-slate-300" : "bg-white text-slate-600"
+                      }`}
+                    >
+                      <p
+                        className={`font-semibold transition-colors duration-300 ${
+                          isDarkActive ? "text-slate-100" : "text-slate-800"
+                        }`}
+                      >
                         🚀 Registro de Características del Proyecto:
                       </p>
                       <p>• v1.0.0 - Lanzamiento inicial del hook de captura DOM.</p>
@@ -490,10 +522,10 @@ export default function HomeContainer() {
                   </div>
 
                   {/* Elemento excluido de la captura */}
-                  <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/60 ignore-capture backdrop-blur-sm text-left">
+                  <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/60 ignore-capture backdrop-blur-sm">
                     <div className="flex items-start gap-2">
                       <span className="text-sm shrink-0">⚠️</span>
-                      <p className="text-[10px] sm:text-xs text-amber-800 font-medium leading-normal">
+                      <p className="text-[10px] sm:text-xs text-amber-800 font-semibold leading-normal">
                         Este aviso amarillo se omitirá en la descarga gracias al filtro de exclusión{" "}
                         <code className="bg-amber-100/60 px-1 py-0.5 rounded font-mono border border-amber-200/50 font-bold">
                           .ignore-capture
@@ -510,17 +542,17 @@ export default function HomeContainer() {
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
-                    className="absolute inset-0 bg-slate-950/60 rounded-2xl cursor-crosshair flex flex-col items-center justify-center select-none"
-                    style={{ margin: "1.5rem" }} // Alínea con el padding del CardContent
+                    className="absolute inset-0 bg-slate-950/65 rounded-2xl cursor-crosshair flex flex-col items-center justify-center select-none"
+                    style={{ margin: "1.5rem" }} // Sincroniza con el padding de CardContent
                   >
                     {!cropStart && (
-                      <div className="bg-white/90 backdrop-blur-sm p-3 rounded-xl border border-slate-200/60 text-slate-800 text-center shadow-lg pointer-events-none max-w-xs space-y-1">
+                      <div className="bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-slate-200/60 text-slate-800 text-center shadow-2xl pointer-events-none max-w-[260px] space-y-1.5">
                         <p className="text-xs font-bold flex items-center gap-1.5 justify-center text-indigo-600">
                           <Scissors className="w-4 h-4 animate-bounce" /> Mode Recorte Visual Activo
                         </p>
-                        <p className="text-[10px] text-slate-500 leading-normal">
+                        <p className="text-[10px] text-slate-500 font-semibold leading-normal">
                           Mantén presionado el clic y arrastra sobre la tarjeta para dibujar el área
-                          a recortar.
+                          de captura. Presiona Esc para salir.
                         </p>
                       </div>
                     )}
@@ -528,7 +560,7 @@ export default function HomeContainer() {
                     {/* Rectángulo de selección claro dibujado en pantalla */}
                     {cropStart && cropEnd && (
                       <div
-                        className="absolute border-2 border-dashed border-sky-400 bg-sky-400/10 shadow-[0_0_0_9999px_rgba(15,23,42,0.6)] overflow-hidden"
+                        className="absolute border-2 border-dashed border-sky-400 bg-sky-400/10 shadow-[0_0_0_9999px_rgba(15,23,42,0.65)] overflow-visible"
                         style={{
                           left: Math.min(cropStart.x, cropEnd.x),
                           top: Math.min(cropStart.y, cropEnd.y),
@@ -536,10 +568,42 @@ export default function HomeContainer() {
                           height: Math.abs(cropStart.y - cropEnd.y),
                         }}
                       >
-                        <div className="absolute top-1 left-1 bg-sky-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                        <div className="absolute -top-6 left-0 bg-sky-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap">
                           {Math.round(Math.abs(cropStart.x - cropEnd.x))} x{" "}
                           {Math.round(Math.abs(cropStart.y - cropEnd.y))}px
                         </div>
+                      </div>
+                    )}
+
+                    {/* Menú de control flotante interactivo abajo del área dibujada */}
+                    {cropArea && (
+                      <div
+                        className="absolute bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl shadow-2xl border border-slate-200/80 flex items-center gap-2 z-50 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-200"
+                        style={{
+                          left: Math.max(
+                            10,
+                            Math.min(cropArea.x, ref.current ? ref.current.clientWidth - 180 : 0)
+                          ),
+                          top: Math.max(10, cropArea.y + cropArea.height + 15),
+                        }}
+                      >
+                        <span className="text-[10px] font-bold text-indigo-600 pr-1.5 border-r border-slate-100 whitespace-nowrap">
+                          {Math.round(cropArea.width)}x{Math.round(cropArea.height)}px
+                        </span>
+                        <button
+                          type="button"
+                          onClick={cancelCropMode}
+                          className="text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100 transition"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsCropMode(false)}
+                          className="text-[10px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-lg shadow-sm transition"
+                        >
+                          Fijar Recorte
+                        </button>
                       </div>
                     )}
                   </div>
@@ -549,7 +613,7 @@ export default function HomeContainer() {
               {/* Botón flotante para restablecer el recorte si ya hay uno fijado */}
               {cropArea && !isCropMode && (
                 <div className="px-6 pb-2 text-left flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 text-[10px] bg-sky-50 text-sky-700 border border-sky-200 px-2.5 py-1 rounded-lg font-bold">
+                  <span className="inline-flex items-center gap-1.5 text-[10px] bg-sky-50 text-sky-700 border border-sky-200 px-2.5 py-1 rounded-lg font-bold">
                     <Scissors className="w-3 h-3 text-sky-500" />
                     Recorte activo: {Math.round(cropArea.width)}x{Math.round(cropArea.height)}px
                   </span>
@@ -598,7 +662,7 @@ export default function HomeContainer() {
                 <Button
                   onClick={handleCapture}
                   size="lg"
-                  className="flex-1 h-12 text-sm font-semibold gap-2 transition-all duration-300 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-lg shadow-indigo-600/15 hover:shadow-xl hover:shadow-indigo-600/25 hover:-translate-y-0.5 rounded-xl group"
+                  className="flex-1 h-12 text-sm font-bold gap-2 transition-all duration-300 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-lg shadow-indigo-600/15 hover:shadow-xl hover:shadow-indigo-600/25 hover:-translate-y-0.5 rounded-xl group"
                   disabled={isCapturing}
                 >
                   {isCapturing ? (
@@ -626,7 +690,7 @@ export default function HomeContainer() {
                   onClick={handleCopy}
                   variant="outline"
                   size="lg"
-                  className="h-12 px-5 text-sm font-semibold gap-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 rounded-xl hover:-translate-y-0.5 transition-all duration-300"
+                  className="h-12 px-5 text-sm font-bold gap-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 rounded-xl hover:-translate-y-0.5 transition-all duration-300"
                   disabled={isCopying}
                 >
                   {isCopying ? (

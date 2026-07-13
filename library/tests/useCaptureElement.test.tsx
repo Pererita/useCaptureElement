@@ -102,7 +102,7 @@ describe("useCaptureElement", () => {
     const div = document.createElement("div");
     const childToExclude = document.createElement("span");
     childToExclude.className = "no-capture";
-    childToExclude.style.visibility = "visible";
+    childToExclude.style.display = "block";
     div.appendChild(childToExclude);
     document.body.appendChild(div);
 
@@ -111,7 +111,7 @@ describe("useCaptureElement", () => {
     // Interceptar html-to-image para comprobar que el elemento fue ocultado durante el proceso
     const htmlToImage = await import("html-to-image");
     const toPngSpy = vi.spyOn(htmlToImage, "toPng").mockImplementation(async () => {
-      expect(childToExclude.style.visibility).toBe("hidden");
+      expect(childToExclude.style.display).toBe("none");
       return "data:image/png;base64,mockPng";
     });
 
@@ -119,7 +119,7 @@ describe("useCaptureElement", () => {
       excludeSelector: ".no-capture",
     });
 
-    expect(childToExclude.style.visibility).toBe("visible");
+    expect(childToExclude.style.display).toBe("block");
     toPngSpy.mockRestore();
   });
 

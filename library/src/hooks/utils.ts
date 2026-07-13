@@ -32,7 +32,7 @@ export interface CaptureOptions {
 }
 
 /**
- * Utilidad interna para ocultar temporalmente elementos del DOM por selector CSS.
+ * Utilidad interna para ocultar temporalmente elementos del DOM por selector CSS usando display: none.
  * Retorna una función para restaurar su estado original.
  */
 export const tempHideElements = (
@@ -46,17 +46,17 @@ export const tempHideElements = (
     const htmlEl = el as HTMLElement;
     return {
       element: htmlEl,
-      visibility: htmlEl.style.visibility,
+      display: htmlEl.style.display,
     };
   });
 
   excludedElements.forEach((el) => {
-    (el as HTMLElement).style.visibility = "hidden";
+    (el as HTMLElement).style.display = "none";
   });
 
   return () => {
-    originalStyles.forEach(({ element, visibility }) => {
-      element.style.visibility = visibility;
+    originalStyles.forEach(({ element, display }) => {
+      element.style.display = display;
     });
   };
 };
@@ -86,23 +86,51 @@ export const applyStyleOverrides = (
 };
 
 /**
- * Expande temporalmente un elemento para abarcar la totalidad de su scroll y retorna la función de restauración.
+ * Expande de forma recursiva el elemento y todos sus descendientes que contengan
+ * scroll vertical activo para capturar la totalidad del contenido.
  */
 export const applyFullScrollCapture = (element: HTMLElement, enabled: boolean): (() => void) => {
   if (!enabled) return () => {};
 
-  const originalHeight = element.style.height;
-  const originalMaxHeight = element.style.maxHeight;
-  const originalOverflow = element.style.overflow;
+  const scrollableElements: Array<{
+    element: HTMLElement;
+    height: string;
+    maxHeight: string;
+    overflow: string;
+  }> = [];
 
-  element.style.height = `${element.scrollHeight}px`;
-  element.style.maxHeight = "none";
-  element.style.overflow = "visible";
+  const expandElement = (el: HTMLElement) => {
+    if (typeof window === "undefined") return;
+    const style = window.getComputedStyle(el);
+    const hasScrollableOverflow = style.overflowY === "auto" || style.overflowY === "scroll";
+
+    if (hasScrollableOverflow && el.scrollHeight > el.clientHeight) {
+      scrollableElements.push({
+        element: el,
+        height: el.style.height,
+        maxHeight: el.style.maxHeight,
+        overflow: el.style.overflow,
+      });
+      el.style.height = `${el.scrollHeight}px`;
+      el.style.maxHeight = "none";
+      el.style.overflow = "visible";
+    }
+  };
+
+  // Evaluar el elemento principal
+  expandElement(element);
+
+  // Buscar todos los descendientes con scroll
+  const descendants = Array.from(element.querySelectorAll("*")) as HTMLElement[];
+  descendants.forEach(expandElement);
 
   return () => {
-    element.style.height = originalHeight;
-    element.style.maxHeight = originalMaxHeight;
-    element.style.overflow = originalOverflow;
+    // Restaurar estilos en orden inverso
+    scrollableElements.forEach(({ element: el, height, maxHeight, overflow }) => {
+      el.style.height = height;
+      el.style.maxHeight = maxHeight;
+      el.style.overflow = overflow;
+    });
   };
 };
 
