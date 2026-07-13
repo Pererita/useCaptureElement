@@ -43,6 +43,7 @@ export default function HomeContainer() {
   const [download, setDownload] = useState(true);
   const [quality, setQuality] = useState(0.95);
   const [capturedUrl, setCapturedUrl] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Estados de características avanzadas
   const [fullScroll, setFullScroll] = useState(false);
@@ -64,6 +65,12 @@ export default function HomeContainer() {
   const [cropStart, setCropStart] = useState<{ x: number; y: number } | null>(null);
   const [cropEnd, setCropEnd] = useState<{ x: number; y: number } | null>(null);
 
+  // Función para mostrar Toast personalizado elegante
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 2500);
+  };
+
   // Efecto para escuchar la tecla escape y cancelar el recorte
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -84,6 +91,7 @@ export default function HomeContainer() {
       download,
       quality,
       fullScrollCapture: fullScroll,
+      // Aplicamos un tema oscuro nítido mediante styleOverrides
       styleOverrides: applyDarkTheme
         ? {
             backgroundColor: "#0f172a",
@@ -95,11 +103,13 @@ export default function HomeContainer() {
             borderWidth: "3px",
           }
         : null,
+      // Color sólido para la marca de agua y opacidad controlada de forma nativa
       watermark: watermarkText
         ? {
             text: watermarkText,
-            color: applyDarkTheme ? "rgba(255, 255, 255, 0.45)" : "rgba(99, 102, 241, 0.45)",
-            fontSize: 18,
+            color: applyDarkTheme ? "#f8fafc" : "#6366f1",
+            opacity: 0.65,
+            fontSize: 24, // Letras grandes y nítidas
             position: watermarkPosition,
           }
         : null,
@@ -114,9 +124,11 @@ export default function HomeContainer() {
       const dataUrl = await capture(ref, getActiveOptions());
       if (!download && dataUrl) {
         setCapturedUrl(dataUrl);
+        showToast("¡Base64 generado con éxito! 🔮");
       }
     } catch (error) {
       console.error("Error durante la captura:", error);
+      showToast("Error al generar la captura ❌");
     } finally {
       setIsCapturing(false);
     }
@@ -139,10 +151,14 @@ export default function HomeContainer() {
       const success = await copyToClipboard(ref, copyOptions);
       if (success) {
         setCopySuccess(true);
+        showToast("¡Imagen copiada al portapapeles! 📋");
         setTimeout(() => setCopySuccess(false), 2000);
+      } else {
+        showToast("No se pudo copiar la imagen ❌");
       }
     } catch (error) {
       console.error("Error al copiar al portapapeles:", error);
+      showToast("Error al copiar la imagen ❌");
     } finally {
       setIsCopying(false);
     }
@@ -205,14 +221,20 @@ export default function HomeContainer() {
     setCropEnd(null);
   };
 
-  const isDarkActive = applyDarkTheme && (isCapturing || isCopying);
-
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden font-sans selection:bg-indigo-100">
       {/* Elementos decorativos de fondo */}
       <div className="absolute top-0 -left-4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
       <div className="absolute top-0 -right-4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
       <div className="absolute -bottom-8 left-10 sm:left-20 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+
+      {/* Toast personalizado elegante */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 bg-slate-900/95 backdrop-blur-md text-white text-xs sm:text-sm font-bold px-4 py-3 rounded-xl shadow-2xl border border-slate-800 flex items-center gap-2 z-[999] animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
       {/* Contenido principal */}
       <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative z-10 w-full max-w-5xl mx-auto">
@@ -240,7 +262,7 @@ export default function HomeContainer() {
           <div className="lg:col-span-5 space-y-6">
             <Card className="shadow-lg border border-slate-200/50 bg-white/80 backdrop-blur-md rounded-2xl">
               <CardHeader className="border-b border-slate-100 p-5">
-                <CardTitle className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <CardTitle className="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
                   <Sliders className="w-5 h-5 text-indigo-500" />
                   Configuración del Hook
                 </CardTitle>
@@ -251,8 +273,8 @@ export default function HomeContainer() {
 
               <CardContent className="p-5 space-y-6">
                 {/* 1. Selector de Formato */}
-                <div className="space-y-2">
-                  <label className="text-xs font-extrabold text-slate-700 block">
+                <div className="space-y-2 text-left">
+                  <label className="text-xs sm:text-sm font-extrabold text-slate-700 block">
                     Formato de Exportación:
                   </label>
                   <div className="flex flex-wrap gap-1 p-1 bg-slate-100/80 rounded-xl border border-slate-200/30">
@@ -263,7 +285,7 @@ export default function HomeContainer() {
                           setFormat(fmt);
                           setCapturedUrl(null);
                         }}
-                        className={`flex-1 min-w-[55px] py-2 text-xs font-bold rounded-lg capitalize transition-all duration-300 ${
+                        className={`flex-1 min-w-[55px] py-2 text-xs sm:text-sm font-bold rounded-lg capitalize transition-all duration-300 ${
                           format === fmt
                             ? "bg-white text-indigo-600 shadow-sm border border-slate-200/40"
                             : "text-slate-500 hover:text-slate-800 hover:bg-white/40"
@@ -276,9 +298,9 @@ export default function HomeContainer() {
                 </div>
 
                 {/* 2. Calidad de imagen */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 text-left">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-extrabold text-slate-700 block">
+                    <label className="text-xs sm:text-sm font-extrabold text-slate-700 block">
                       Calidad de Compresión:
                     </label>
                     <span className="text-xs font-bold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded border border-indigo-100">
@@ -304,11 +326,12 @@ export default function HomeContainer() {
                   {/* Interruptor Descarga */}
                   <label className="flex items-start justify-between cursor-pointer select-none">
                     <div className="space-y-0.5 pr-4 text-left">
-                      <span className="text-xs font-extrabold text-slate-700 block">
+                      <span className="text-xs sm:text-sm font-extrabold text-slate-700 block">
                         Descargar archivo localmente
                       </span>
                       <span className="text-[10px] text-indigo-600/80 font-semibold block leading-tight">
-                        Si lo desactivas, generará el Base64 en lugar de descargar el archivo.
+                        Si lo desactivas, generará el Base64 en la consola inferior en lugar de
+                        descargar el archivo.
                       </span>
                     </div>
                     <input
@@ -325,7 +348,7 @@ export default function HomeContainer() {
                   {/* Interruptor Scroll Completo */}
                   <label className="flex items-start justify-between cursor-pointer select-none">
                     <div className="space-y-0.5 pr-4 text-left">
-                      <span className="text-xs font-extrabold text-slate-700 block">
+                      <span className="text-xs sm:text-sm font-extrabold text-slate-700 block">
                         Capturar Scroll Completo
                       </span>
                       <span className="text-[10px] text-slate-400 font-semibold block leading-tight">
@@ -343,12 +366,12 @@ export default function HomeContainer() {
                   {/* Interruptor Inyección de Estilos */}
                   <label className="flex items-start justify-between cursor-pointer select-none">
                     <div className="space-y-0.5 pr-4 text-left">
-                      <span className="text-xs font-extrabold text-slate-700 block">
+                      <span className="text-xs sm:text-sm font-extrabold text-slate-700 block">
                         Aplicar Tema Oscuro (Styles)
                       </span>
                       <span className="text-[10px] text-slate-400 font-semibold block leading-tight">
-                        Aplica un tema oscuro sofisticado solo en el resultado (la pantalla sigue
-                        blanca).
+                        Aplica un tema oscuro sofisticado solo en el archivo final. La pantalla no
+                        sufrirá parpadeos.
                       </span>
                     </div>
                     <input
@@ -362,7 +385,7 @@ export default function HomeContainer() {
 
                 {/* 4. Marca de Agua */}
                 <div className="space-y-3 pt-4 border-t border-slate-100 text-left">
-                  <label className="text-xs font-extrabold text-slate-700 block flex items-center gap-1">
+                  <label className="text-xs sm:text-sm font-extrabold text-slate-700 block flex items-center gap-1">
                     <Type className="w-4 h-4 text-indigo-500" />
                     Marca de Agua Automática:
                   </label>
@@ -371,12 +394,12 @@ export default function HomeContainer() {
                     value={watermarkText}
                     onChange={(e) => setWatermarkText(e.target.value)}
                     placeholder="Ej. useCaptureElement"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-slate-50/50 font-semibold"
+                    className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-slate-50/50 font-semibold"
                   />
                   {watermarkText && (
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <span className="text-[10px] text-slate-500 font-extrabold block">
-                        POSICIÓN DE LA MARCA DE AGUA:
+                        POSICIÓN EN LA IMAGEN:
                       </span>
                       <div className="grid grid-cols-3 gap-1.5 w-full max-w-[220px] mx-auto bg-slate-100/60 p-1.5 rounded-xl border border-slate-200/40">
                         {[
@@ -450,31 +473,19 @@ export default function HomeContainer() {
               </CardHeader>
 
               <CardContent className="p-6 relative">
-                {/* Elemento principal a capturar */}
+                {/* Elemento principal a capturar (mantenido siempre blanco en pantalla) */}
                 <div
                   ref={ref}
-                  className={`p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 space-y-4 relative overflow-hidden transition-all duration-300 text-left ${
-                    isDarkActive
-                      ? "bg-slate-900 text-slate-100 ring-slate-800"
-                      : "bg-white text-slate-800"
-                  }`}
+                  className="bg-white text-slate-800 p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 space-y-4 relative overflow-hidden transition-all duration-300 text-left"
                 >
                   <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
 
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <h3
-                        className={`text-base sm:text-lg font-extrabold tracking-tight transition-colors duration-300 ${
-                          isDarkActive ? "text-white" : "text-slate-800"
-                        }`}
-                      >
+                      <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-slate-800">
                         Tarjeta de Datos Dinámicos
                       </h3>
-                      <p
-                        className={`font-semibold text-xs transition-colors duration-300 ${
-                          isDarkActive ? "text-sky-400" : "text-slate-500"
-                        }`}
-                      >
+                      <p className="font-semibold text-slate-500 text-xs">
                         Captura de pantalla limpia, modular y segura.
                       </p>
                     </div>
@@ -494,16 +505,8 @@ export default function HomeContainer() {
                         Desplázame 👇
                       </span>
                     </div>
-                    <div
-                      className={`max-h-36 overflow-y-auto p-3 text-[11px] space-y-1.5 scrollbar-thin transition-colors duration-300 ${
-                        isDarkActive ? "bg-slate-950 text-slate-300" : "bg-white text-slate-600"
-                      }`}
-                    >
-                      <p
-                        className={`font-semibold transition-colors duration-300 ${
-                          isDarkActive ? "text-slate-100" : "text-slate-800"
-                        }`}
-                      >
+                    <div className="max-h-36 overflow-y-auto p-3 text-[11px] space-y-1.5 bg-white text-slate-650 scrollbar-thin transition-colors duration-300">
+                      <p className="font-semibold text-slate-800">
                         🚀 Registro de Características del Proyecto:
                       </p>
                       <p>• v1.0.0 - Lanzamiento inicial del hook de captura DOM.</p>
@@ -638,7 +641,7 @@ export default function HomeContainer() {
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(capturedUrl);
-                          alert("Texto Base64 copiado");
+                          showToast("¡Código Base64 copiado con éxito! 🚀");
                         }}
                         className="text-[10px] bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold px-2.5 py-1 rounded-lg border border-indigo-200/50 transition"
                       >

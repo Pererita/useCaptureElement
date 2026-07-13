@@ -68,7 +68,14 @@ export const applyStyleOverrides = (
   element: HTMLElement,
   styleOverrides: Partial<CSSStyleDeclaration> | null
 ): (() => void) => {
-  if (!styleOverrides) return () => {};
+  element.classList.add("use-capture-active");
+
+  if (!styleOverrides) {
+    return () => {
+      element.classList.remove("use-capture-active");
+    };
+  }
+
   const originalStyles: { [key: string]: string } = {};
 
   Object.keys(styleOverrides).forEach((key) => {
@@ -82,6 +89,7 @@ export const applyStyleOverrides = (
       const styleKey = key as any;
       element.style[styleKey] = originalStyles[styleKey];
     });
+    element.classList.remove("use-capture-active");
   };
 };
 

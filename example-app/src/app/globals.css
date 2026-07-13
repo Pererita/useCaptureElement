@@ -113,3 +113,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Reglas de especificidad para anular Tailwind en modo captura */
+.use-capture-active * {
+  background-color: transparent !important;
+  color: inherit !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.use-capture-active .ignore-capture {
+  display: none !important;
+}
