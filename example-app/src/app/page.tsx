@@ -1,5 +1,7 @@
 "use client";
 
+// Demo interactiva oficial del paquete @pererita/use-capture-element
+
 import { useRef, useState } from "react";
 import { useCaptureElement } from "@pererita/use-capture-element";
 import { Button } from "@/components/ui/button";
