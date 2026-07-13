@@ -1,6 +1,7 @@
 {
   "name": "use-capture-element-workspace",
   "private": true,
+  "packageManager": "pnpm@9.1.0",
   "scripts": {
     "dev:example": "pnpm --filter example-app dev",
     "build:lib": "pnpm --filter use-capture-element build",
